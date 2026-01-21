@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoidSentry Documentation</title>
+    <link rel="stylesheet" href="style/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Left Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>VoidSentry</h1>
+                <p class="version">v0.0.6</p>
+            </div>
+            <ul class="nav-menu">
+                <li><button class="nav-btn active" data-page="overview">Overview</button></li>
+                <li><button class="nav-btn" data-page="api">API Reference</button></li>
+                <li><button class="nav-btn" data-page="practices">Best Practices</button></li>
+                <li><button class="nav-btn" data-page="credits">Credits & Logs</button></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <!-- Page 1: Overview -->
+            <section id="overview" class="page active">
+                <div class="page-content">
+                    <h1 class="page-title">VoidSentry</h1>
+                    <p class="tagline">High-performance buffer serialization for Roblox</p>
+
+                    <div class="section">
+                        <h2>Purpose</h2>
+                        <p>VoidSentry is a powerful, low-level buffer serializer designed for efficient data transmission in Roblox games. It provides both static (schema-based) and dynamic (schemaless) serialization with support for a wide range of data types.</p>
+                        
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <h3>🚀 High Performance</h3>
+                                <p>Native optimizations and efficient buffer operations for maximum speed</p>
+                            </div>
+                            <div class="feature-card">
+                                <h3>📦 Zero Dependencies</h3>
+                                <p>Standalone library with no external requirements</p>
+                            </div>
+                            <div class="feature-card">
+                                <h3>🎯 Type Safe</h3>
+                                <p>Full strict-mode Luau type annotations for better IDE support</p>
+                            </div>
+                            <div class="feature-card">
+                                <h3>⚡ Flexible</h3>
+                                <p>30+ built-in types including primitives, Roblox types, and complex structures</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>Installation</h2>
+                        <div class="code-block">
+                            <h3>Wally: </h3>
+                            <pre><code>[dependencies]
+VoidSentry = "elentium/voidsentry@0.0.6"</code></pre>
+                             <h3> Direct(rbxm): </h3>
+                               <p>find the VoidSentry.rbxm in roblox-direct file in repo</p>  
+                        </div>
+                        <p>Then run: <code class="inline-code">wally install</code></p>
+                    </div>
+
+                    <div class="section">
+                        <h2>Quick Start</h2>
+                        
+                        <h3>Static Serializer (Recommended)</h3>
+                        <div class="code-block">
+                            <pre><code>--!strict
+local VoidSentry = require(ReplicatedStorage.Packages.VoidSentry)
+local Types = VoidSentry.Types
+
+-- Create a serializer with a fixed schema
+local Serializer = VoidSentry.Static.new(
+    nil, -- No compression
+    Types.Int32,
+    Types.String,
+    Types.Struct({
+        Hello = Types.String,
+        World = Types.Int32,
+    })
+)
+
+-- Serialize data
+local b = Serializer:serialize(nil, 42, "Hello, world!", {
+    Hello = "hi",
+    World = 999,
+})
+
+-- Deserialize data
+local int, str, struct = Serializer:deserialize(nil, b)</code></pre>
+                        </div>
+
+                        <h3>Dynamic Serializer</h3>
+                        <div class="code-block">
+                            <pre><code>local VoidSentry = require(ReplicatedStorage.Packages.VoidSentry)
+local Dynamic = VoidSentry.Dynamic
+
+-- No schema required!
+local buffer = Dynamic.serialize(
+    nil, -- No compression
+    nil, -- No offset
+    42,
+    "Dynamic serialization",
+    Vector3.new(10, 20, 30),
+    true
+)
+
+-- Deserialize automatically
+local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>Performance Benchmarks</h2>
+                        <p class="note">* All benchmarks performed with 2000 iterations per test on standard Roblox hardware. Results show average time per operation.</p>
+                        
+                        <h3>Static Serializer Performance</h3>
+                        <div class="benchmark-table-container">
+                            <table class="benchmark-table">
+                                <thead>
+                                    <tr>
+                                        <th>Test Case</th>
+                                        <th>Serialize (avg)</th>
+                                        <th>Deserialize (avg)</th>
+                                        <th>Total (avg)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Simple Types (Int32, String, Bool)</td><td>0.000911 ms</td><td>0.000615 ms</td><td>0.001526 ms</td></tr>
+                                    <tr><td>Vector Types (Vector3, Vector3F24)</td><td>0.000753 ms</td><td>0.000711 ms</td><td>0.001464 ms</td></tr>
+                                    <tr><td>Array Types (Array&lt;Int32&gt;)</td><td>0.001130 ms</td><td>0.000686 ms</td><td>0.001816 ms</td></tr>
+                                    <tr><td>Struct Types (PlayerData)</td><td>0.001222 ms</td><td>0.001091 ms</td><td>0.002313 ms</td></tr>
+                                    <tr><td>Complex Nested Types</td><td>0.002583 ms</td><td>0.001988 ms</td><td>0.004571 ms</td></tr>
+                                    <tr><td>With Compression (Level 5)</td><td>0.001915 ms</td><td>0.001674 ms</td><td>0.003589 ms</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h3>Dynamic Serializer Performance</h3>
+                        <div class="benchmark-table-container">
+                            <table class="benchmark-table">
+                                <thead>
+                                    <tr>
+                                        <th>Test Case</th>
+                                        <th>Serialize (avg)</th>
+                                        <th>Deserialize (avg)</th>
+                                        <th>Total (avg)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Simple Types (Int32, String, Bool)</td><td>0.002592 ms</td><td>0.004098 ms</td><td>0.006690 ms</td></tr>
+                                    <tr><td>Vector Types (Vector3)</td><td>0.001108 ms</td><td>0.001454 ms</td><td>0.002562 ms</td></tr>
+                                    <tr><td>Array Types (Mixed Array)</td><td>0.022226 ms</td><td>0.017408 ms</td><td>0.039634 ms</td></tr>
+                                    <tr><td>Struct Types (PlayerData as Table)</td><td>0.027944 ms</td><td>0.022384 ms</td><td>0.050328 ms</td></tr>
+                                    <tr><td>Complex Nested Types</td><td>0.039181 ms</td><td>0.034230 ms</td><td>0.073411 ms</td></tr>
+                                    <tr><td>Mixed Types (Multiple Types)</td><td>0.019436 ms</td><td>0.019406 ms</td><td>0.038842 ms</td></tr>
+                                    <tr><td>With Compression (Level 5)</td><td>0.003664 ms</td><td>0.005314 ms</td><td>0.008978 ms</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="benchmark-grid">
+                            <div class="benchmark-card">
+                                <h3>Performance Comparison</h3>
+                                <p class="benchmark-number">4.98x</p>
+                                <p class="benchmark-label">faster (Static vs Dynamic)</p>
+                                <p class="benchmark-desc">Simple types benchmark shows Static serializer is ~5x faster</p>
+                            </div>
+                            <div class="benchmark-card">
+                                <h3>Static Simple Types</h3>
+                                <p class="benchmark-number">0.001340 ms</p>
+                                <p class="benchmark-label">average per operation</p>
+                                <p class="benchmark-desc">Serialize + Deserialize combined</p>
+                            </div>
+                            <div class="benchmark-card">
+                                <h3>Dynamic Simple Types</h3>
+                                <p class="benchmark-number">0.006670 ms</p>
+                                <p class="benchmark-label">average per operation</p>
+                                <p class="benchmark-desc">Serialize + Deserialize combined</p>
+                            </div>
+                            <div class="benchmark-card">
+                                <h3>Overhead</h3>
+                                <p class="benchmark-number">0.005330 ms</p>
+                                <p class="benchmark-label">additional time per operation</p>
+                                <p class="benchmark-desc">Dynamic adds type inference overhead</p>
+                            </div>
+                        </div>
+
+                        <div class="note-box">
+                            <h4>💡 Key Insights</h4>
+                            <ul>
+                                <li><strong>Static serializer</strong> is significantly faster (4.98x) for simple types</li>
+                                <li><strong>Dynamic serializer</strong> overhead increases dramatically with complex nested structures</li>
+                                <li><strong>Compression</strong> adds overhead but can be beneficial for larger datasets</li>
+                                <li><strong>Deserialization</strong> is generally faster than serialization for Static, but slower for Dynamic due to type inference</li>
+                                <li>Use <strong>Static serializer</strong> when schema is known for optimal performance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page 2: API Reference -->
+            <section id="api" class="page">
+                <div class="page-content">
+                    <h1 class="page-title">API Reference</h1>
+
+                    <div class="section">
+                        <h2>Static Serializer</h2>
+                        
+                        <div class="api-item">
+                            <h3 class="api-signature">VoidSentry.Static.new(compressionLevel: number?, ...TypeNode): StaticObject</h3>
+                            <p>Creates a new static serializer with a fixed schema.</p>
+                            <div class="api-params">
+                                <strong>Parameters:</strong>
+                                <ul>
+                                    <li><code>compressionLevel</code> (optional): Zstd compression level (-7 to 22, or <code>nil</code> for no compression)</li>
+                                    <li><code>...TypeNode</code>: Variable number of type nodes defining the schema</li>
+                                </ul>
+                                <strong>Returns:</strong> A <code>StaticObject</code> with <code>serialize</code> and <code>deserialize</code> methods
+                            </div>
+                        </div>
+
+                        <div class="api-item">
+                            <h3 class="api-signature">StaticObject:serialize(offset: number?, ...values): buffer</h3>
+                            <p>Serializes data according to the schema.</p>
+                            <div class="api-params">
+                                <strong>Parameters:</strong>
+                                <ul>
+                                    <li><code>offset</code> (optional): Starting byte offset (reserves <code>offset</code> bytes at the beginning for custom metadata)</li>
+                                    <li><code>...values</code>: Values matching the schema types</li>
+                                </ul>
+                                <strong>Returns:</strong> A buffer containing the serialized data
+                            </div>
+                        </div>
+
+                        <div class="api-item">
+                            <h3 class="api-signature">StaticObject:deserialize(offset: number?, buffer: buffer): ...values</h3>
+                            <p>Deserializes data from a buffer.</p>
+                            <div class="api-params">
+                                <strong>Parameters:</strong>
+                                <ul>
+                                    <li><code>offset</code> (optional): Starting byte offset to read from</li>
+                                    <li><code>buffer</code>: The buffer to deserialize</li>
+                                </ul>
+                                <strong>Returns:</strong> One or multiple values matching the schema
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>Dynamic Serializer</h2>
+                        
+                        <div class="api-item">
+                            <h3 class="api-signature">VoidSentry.Dynamic.serialize(compressionLevel: number?, offset: number?, ...values): buffer</h3>
+                            <p>Serializes data with automatic type inference.</p>
+                            <div class="api-params">
+                                <strong>Parameters:</strong>
+                                <ul>
+                                    <li><code>compressionLevel</code> (optional): Zstd compression level (-7 to 22)</li>
+                                    <li><code>offset</code> (optional): Starting byte offset</li>
+                                    <li><code>...values</code>: Any serializable values</li>
+                                </ul>
+                                <strong>Returns:</strong> A buffer with type information and data
+                            </div>
+                        </div>
+
+                        <div class="api-item">
+                            <h3 class="api-signature">VoidSentry.Dynamic.deserialize(compressionLevel: number?, offset: number?, buffer: buffer): ...values</h3>
+                            <p>Deserializes data with embedded type information.</p>
+                            <div class="api-params">
+                                <strong>Parameters:</strong>
+                                <ul>
+                                    <li><code>compressionLevel</code> (optional): Must match serialization compression level</li>
+                                    <li><code>offset</code> (optional): Starting byte offset</li>
+                                    <li><code>buffer</code>: The buffer to deserialize</li>
+                                </ul>
+                                <strong>Returns:</strong> All values that were serialized
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>Available Types</h2>
+
+                        <div class="types-section">
+                            <h3>Numeric Types</h3>
+                            <table class="types-table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Size</th>
+                                        <th>Range</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><code>Types.Int8</code></td><td>Signed 8-bit integer</td><td>1 byte</td><td>-128 to 127</td></tr>
+                                    <tr><td><code>Types.UInt8</code></td><td>Unsigned 8-bit integer</td><td>1 byte</td><td>0 to 255</td></tr>
+                                    <tr><td><code>Types.Int16</code></td><td>Signed 16-bit integer</td><td>2 bytes</td><td>-32,768 to 32,767</td></tr>
+                                    <tr><td><code>Types.UInt16</code></td><td>Unsigned 16-bit integer</td><td>2 bytes</td><td>0 to 65,535</td></tr>
+                                    <tr><td><code>Types.Int32</code></td><td>Signed 32-bit integer</td><td>4 bytes</td><td>-2³¹ to 2³¹-1</td></tr>
+                                    <tr><td><code>Types.UInt32</code></td><td>Unsigned 32-bit integer</td><td>4 bytes</td><td>0 to 2³²-1</td></tr>
+                                    <tr><td><code>Types.Float32</code></td><td>32-bit floating point</td><td>4 bytes</td><td>IEEE 754 single precision</td></tr>
+                                    <tr><td><code>Types.Float64</code></td><td>64-bit floating point</td><td>8 bytes</td><td>IEEE 754 double precision</td></tr>
+                                    <tr><td><code>Types.Float24</code></td><td>24-bit floating point</td><td>3 bytes</td><td>Reduced precision (custom format)</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="types-section">
+                            <h3>String Types</h3>
+                            <table class="types-table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Max Size</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><code>Types.String</code></td><td>Standard string</td><td>65,535 + 2 bytes (16-bit length prefix)</td></tr>
+                                    <tr><td><code>Types.StringTiny</code></td><td>Compact string</td><td>255 + 1 byte (8-bit length prefix)</td></tr>
+                                    <tr><td><code>Types.StringFixed(len)</code></td><td>Fixed length string</td><td>User-defined length</td></tr>
+                                    <tr><td><code>Types.StringNullTerminated</code></td><td>Null-terminated string (C-style)</td><td>Unlimited</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="types-section">
+                            <h3>Boolean & Special Types</h3>
+                            <ul class="types-list">
+                                <li><code>Types.Bool</code> - Boolean value (1 byte)</li>
+                                <li><code>Types.Void</code> - Empty table (0 bytes)</li>
+                                <li><code>Types.Nil</code> - Nil value (0 bytes)</li>
+                                <li><code>Types.Any</code> - Any type (dynamic, includes type information)</li>
+                            </ul>
+                        </div>
+
+                        <div class="types-section">
+                            <h3>Roblox Types</h3>
+                            <table class="types-table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Size</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><code>Types.Vector3</code></td><td>Full precision Vector3</td><td>12 bytes</td></tr>
+                                    <tr><td><code>Types.Vector3F24</code></td><td>Reduced precision Vector3</td><td>9 bytes</td></tr>
+                                    <tr><td><code>Types.Vector3int16</code></td><td>Integer Vector3</td><td>6 bytes</td></tr>
+                                    <tr><td><code>Types.Vector2</code></td><td>Full precision Vector2</td><td>8 bytes</td></tr>
+                                    <tr><td><code>Types.Vector2F24</code></td><td>Reduced precision Vector2</td><td>6 bytes</td></tr>
+                                    <tr><td><code>Types.Vector2int16</code></td><td>Integer Vector2</td><td>4 bytes</td></tr>
+                                    <tr><td><code>Types.Vector</code></td><td>Full precision vector (luau native vector type)</td><td>12 bytes</td></tr>
+                                    <tr><td><code>Types.VectorF24</code></td><td>Reduced precision vector</td><td>9 bytes</td></tr>
+                                    <tr><td><code>Types.VectorInt16</code></td><td>Integer vector</td><td>6 bytes</td></tr>
+                                    <tr><td><code>Types.CFrame</code></td><td>Full precision CFrame</td><td>48 bytes</td></tr>
+                                    <tr><td><code>Types.CFrameQ</code></td><td>Quaternion CFrame</td><td>28 bytes</td></tr>
+                                    <tr><td><code>Types.Color3</code></td><td>RGB color</td><td>3 bytes</td></tr>
+                                    <tr><td><code>Types.Enum(EnumType)</code></td><td>Enum value (requires Enum parameter)</td><td>2 bytes</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="types-section">
+                            <h3>Collection Types</h3>
+                            <table class="types-table">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Parameters</th>
+                                        <th>Max Size</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><code>Types.Array(elementType)</code></td><td>Variable-size array</td><td>Element type</td><td>65,535 elements</td></tr>
+                                    <tr><td><code>Types.ArrayTiny(elementType)</code></td><td>Compact array</td><td>Element type</td><td>255 elements</td></tr>
+                                    <tr><td><code>Types.ArrayFixed(elementType, len)</code></td><td>Fixed-size array</td><td>Element type, length</td><td>User-defined</td></tr>
+                                    <tr><td><code>Types.Map(keyType, valueType)</code></td><td>Variable-size map</td><td>Key type, value type</td><td>65,535 entries</td></tr>
+                                    <tr><td><code>Types.MapFixed(keyType, valueType, len)</code></td><td>Fixed-size map</td><td>Key type, value type, length</td><td>User-defined</td></tr>
+                                    <tr><td><code>Types.Struct({field = Type, ...})</code></td><td>Fixed structure with named fields</td><td>Schema object</td><td>Fixed fields</td></tr>
+                                    <tr><td><code>Types.Optional(type)</code></td><td>Nullable type</td><td>Base type</td><td>Same as base type + 1 byte</td></tr>
+                                    <tr><td><code>Types.BoolPacked</code></td><td>Array of exactly 8 booleans</td><td>None</td><td>8 booleans (1 byte)</td></tr>
+                                    <tr><td><code>Types.Bits._8(count)</code></td><td>Array of 8-bit values</td><td>Count</td><td>User-defined</td></tr>
+                                    <tr><td><code>Types.Bits._16(count)</code></td><td>Array of 16-bit values</td><td>Count</td><td>User-defined</td></tr>
+                                    <tr><td><code>Types.Bits._32(count)</code></td><td>Array of 32-bit values</td><td>Count</td><td>User-defined</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page 3: Best Practices -->
+            <section id="practices" class="page">
+                <div class="page-content">
+                    <h1 class="page-title">Best Practices & Warnings</h1>
+
+                    <div class="section">
+                        <h2>Best Practices</h2>
+
+                        <div class="practice-item">
+                            <h3>✅ Use Static Serializer When Possible</h3>
+                            <p>The static serializer is significantly faster (3x+) than dynamic serialization because it doesn't need to infer types at runtime. Always use static serialization when you know your data structure ahead of time.</p>
+                            <div class="code-block">
+                                <pre><code>-- ✅ Good: Static serializer
+local Serializer = VoidSentry.Static.new(nil, Types.Int32, Types.String)
+
+-- ⚠️ Only use dynamic when structure is unknown
+local buffer = VoidSentry.Dynamic.serialize(nil, nil, data)</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="practice-item">
+                            <h3>✅ Choose Appropriate Types</h3>
+                            <p>Use the smallest type that fits your data to reduce bandwidth and improve performance.</p>
+                            <div class="code-block">
+                                <pre><code>-- ✅ Good: Use Int16 for small numbers
+Types.Int16  -- -32,768 to 32,767
+
+-- ❌ Bad: Using Int32 for small numbers
+Types.Int32  -- Unnecessary overhead
+
+-- ✅ Good: Use Vector3F24 for approximate positions
+Types.Vector3F24  -- 9 bytes vs 12 bytes
+
+-- ✅ Good: Use StringTiny for short strings
+Types.StringTiny  -- For strings ≤ 255 characters</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="practice-item">
+                            <h3>✅ Reuse Serializers</h3>
+                            <p>Create serializer objects once and reuse them. Don't create new serializers on every serialization call.</p>
+                            <div class="code-block">
+                                <pre><code>-- ✅ Good: Create once, reuse
+local PlayerSerializer = VoidSentry.Static.new(nil, Types.Struct({...}))
+
+for _, player in players do
+    local b = PlayerSerializer:serialize(nil, player)
+    -- Send buffer
+end
+
+-- ❌ Bad: Creating new serializer each time
+for _, player in players do
+    local serializer = VoidSentry.Static.new(nil, Types.Struct({...}))
+    local b = serializer:serialize(nil, player)
+end</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="practice-item">
+                            <h3>✅ Batch Serialization</h3>
+                            <p>Serialize multiple values at once rather than separately to reduce overhead.</p>
+                            <div class="code-block">
+                                <pre><code>-- ✅ Good: Serialize together
+local b = Serializer:serialize(nil, intValue, stringValue, structValue)
+
+-- ❌ Bad: Multiple serializations
+local b1 = Serializer:serialize(nil, intValue)
+local b2 = Serializer:serialize(nil, stringValue)
+local b3 = Serializer:serialize(nil, structValue)</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="practice-item">
+                            <h3>✅ Compression Trade-offs</h3>
+                            <p>Compression reduces bandwidth but increases CPU usage. Use compression for large data or slow connections.</p>
+                            <ul>
+                                <li><strong>-7 to 3:</strong> Fast compression, lower ratio (good for real-time)</li>
+                                <li><strong>5 to 10:</strong> Balanced (recommended for most cases)</li>
+                                <li><strong>15 to 22:</strong> Maximum compression, slower (good for storage)</li>
+                            </ul>
+                        </div>
+
+                        <div class="practice-item">
+                            <h3>✅ Validate Data Types</h3>
+                            <p>Ensure your data matches the expected types before serialization to avoid runtime errors.</p>
+                            <div class="code-block">
+                                <pre><code>-- ✅ Good: Type checking
+if typeof(value) == "number" and value >= 0 and value <= 255 then
+    local b = Serializer:serialize(nil, value)
+end</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>⚠️ Warnings</h2>
+
+                        <div class="warning-item">
+                            <h3>⚠️ Schema Mismatches</h3>
+                            <p><strong>Warning:</strong> If you modify your schema, old serialized buffers will be incompatible. Plan schema changes carefully or implement versioning.</p>
+                            <div class="code-block">
+                                <pre><code>-- Schema change breaks compatibility
+-- Old: Types.Int32, Types.String
+-- New: Types.Int32, Types.String, Types.Bool
+-- Old buffers cannot be deserialized with new schema!</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="warning-item">
+                            <h3>⚠️ Compression Level Must Match</h3>
+                            <p><strong>Warning:</strong> The compression level used for serialization must match the compression level used for deserialization. If you use compression, you must use the same level for both operations.</p>
+                            <div class="code-block">
+                                <pre><code>-- ✅ Correct: Same compression level
+local Serializer = VoidSentry.Static.new(5, Types.Int32, Types.String)  -- Compression level 5
+local b = Serializer:serialize(nil, data)
+local result = Serializer:deserialize(nil, b)  -- Uses same compression level 5
+
+-- ❌ Wrong: Different compression levels
+local Serializer1 = VoidSentry.Static.new(5, Types.Int32)  -- Compression level 5
+local Serializer2 = VoidSentry.Static.new(10, Types.Int32) -- Compression level 10
+
+local b = Serializer1:serialize(nil, data)
+local result = Serializer2:deserialize(nil, b)  -- Error! Compression levels don't match
+
+-- ❌ Wrong: Manual compression/decompression mismatch
+local b = Serializer:serialize(nil, data)  -- No compression
+local compressed = EncodingService:CompressBuffer(b, Enum.CompressionAlgorithm.Zstd, 5)
+-- If you compress manually, you must decompress before deserializing
+-- The serializer's deserialize expects the same compression state</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="warning-item">
+                            <h3>⚠️ Compression Usage Recommendations</h3>
+                            <p><strong>Warning:</strong> Compression is not always beneficial. Use compression carefully based on your data characteristics.</p>
+                            <ul>
+                                <li><strong>Not recommended for small data:</strong> Compression overhead may exceed benefits for buffers under 1KB. The compression algorithm itself adds overhead that can make small buffers larger.</li>
+                                <li><strong>Ineffective for unique data:</strong> Compression works best with repetitive patterns. If your data consists of mostly unique bytes (random or encrypted data), compression may actually increase the buffer size rather than reduce it.</li>
+                                <li><strong>CPU vs Bandwidth trade-off:</strong> Compression reduces bandwidth usage but increases CPU usage for both serialization and deserialization. Consider your game's performance profile before enabling compression.</li>
+                                <li><strong>Best for:</strong> Large structured data (>1KB) with repeated patterns, data sent infrequently, or when bandwidth is more constrained than CPU.</li>
+                            </ul>
+                            <div class="code-block">
+                                <pre><code>-- ❌ Not recommended: Small data
+local smallData = Serializer:serialize(nil, 42, "hello")  -- ~10 bytes
+-- Compression adds overhead, may increase size
+
+-- ✅ Good: Large structured data
+local largeData = Serializer:serialize(5, hugeTable, manyStrings)  -- 5KB+
+-- Compression likely beneficial
+
+-- ❌ Not recommended: Random/unique data
+local encryptedData = Serializer:serialize(5, encryptedBuffer)
+-- Random bytes don't compress well, may increase size</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="warning-item">
+                            <h3>⚠️ Offset Usage</h3>
+                            <p><strong>Warning:</strong> If you use an offset during serialization, you must use the same offset during deserialization.</p>
+                            <div class="code-block">
+                                <pre><code>-- ✅ Correct: Same offset
+local b = Serializer:serialize(10, data)
+local result = Serializer:deserialize(10, b)
+
+-- ❌ Wrong: Different offsets
+local b = Serializer:serialize(10, data)
+local result = Serializer:deserialize(0, b)  -- Will fail!</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="warning-item">
+                            <h3>⚠️ Type Limits</h3>
+                            <p><strong>Warning:</strong> Be aware of type limits to avoid runtime errors.</p>
+                            <ul>
+                                <li><code>StringTiny</code>: Max 255 characters</li>
+                                <li><code>ArrayTiny</code>: Max 255 elements</li>
+                                <li><code>String</code> / <code>Array</code>: Max 65,535 characters/elements</li>
+                                <li><code>BoolPacked</code>: Exactly 8 booleans required</li>
+                                <li>Numeric types have fixed ranges</li>
+                            </ul>
+                        </div>
+
+                        <div class="warning-item">
+                            <h3>⚠️ Enum Type Requirements</h3>
+                            <p><strong>Warning:</strong> When using <code>Types.Enum</code>, you must provide the Enum type and ensure the value belongs to that Enum.</p>
+                            <div class="code-block">
+                                <pre><code>-- ✅ Correct
+local MaterialEnum = Types.Enum(Enum.Material)
+local b = Serializer:serialize(nil, Enum.Material.Plastic)
+
+-- ❌ Wrong: Type mismatch
+local MaterialEnum = Types.Enum(Enum.Material)
+local b = Serializer:serialize(nil, Enum.HumanoidStateType.Running)  -- Error!</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Page 4: Credits & Logs -->
+            <section id="credits" class="page">
+                <div class="page-content">
+                    <h1 class="page-title">Credits & Update Logs</h1>
+
+                    <div class="section">
+                        <h2>Credits</h2>
+                        <div class="credits-card">
+                            <h3>Author</h3>
+                            <p><strong>IAMNOTULTRA3</strong> (a.k.a elentium/elite)</p>
+                        </div>
+
+                        <div class="credits-card">
+                            <h3>License</h3>
+                            <p>This project is licensed under the <strong>Apache 2.0 License</strong>.</p>
+                            <p>See the LICENSE file for details.</p>
+                        </div>
+
+                        <div class="credits-card">
+                            <h3>Repository</h3>
+                            <p>Package: <code>elentium/voidsentry@0.0.6</code></p>
+                            <p>Github: <code>https://github.com/Elentium/VoidSentry</code></p>
+                        </div>
+
+                        <div class="credits-card">
+                            <h3>Support</h3>
+                            <p>For questions, issues, or feature requests, please open an issue on the repository or contact the author.</p>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>Changelog</h2>
+                        
+                        <div class="changelog-item">
+                            <h3 class="version-badge">Version 0.0.6</h3>
+                            <ul>
+                                <li>Fixed default.project.json</li>
+                            </ul>
+                        </div>
+
+                        <div class="changelog-item">
+                            <h3 class="version-badge">Version 0.0.5</h3>
+                            <ul>
+                                <li>Created GitHub repo & documentation</li>
+                                <li>Published the package</li>
+                            </ul>
+                        </div>
+
+                        <div class="changelog-item">
+                            <h3 class="version-badge">Version 0.0.4</h3>
+                            <ul>
+                                <li>Changed some type names (e.g., Short → Int16)</li>
+                            </ul>
+                        </div>
+
+                        <div class="changelog-item">
+                            <h3 class="version-badge">Version 0.0.3</h3>
+                            <ul>
+                                <li>Fixed the way any type handled enums</li>
+                                <li>Small optimizations</li>
+                                <li>Better comments</li>
+                            </ul>
+                        </div>
+
+                        <div class="changelog-item">
+                            <h3 class="version-badge">Version 0.0.2</h3>
+                            <ul>
+                                <li>Improved README</li>
+                                <li>Optimized Array, ArrayTiny, ArrayFixed types</li>
+                                <li>Removed redundancy & inconsistencies</li>
+                            </ul>
+                        </div>
+
+                        <div class="changelog-item">
+                            <h3 class="version-badge">Version 0.0.1</h3>
+                            <ul>
+                                <li>Initial release</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2>Contributing</h2>
+                        <p>Contributions are welcome! Please feel free to submit issues or pull requests.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Navigation functionality
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const pages = document.querySelectorAll('.page');
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetPage = button.getAttribute('data-page');
+
+                // Remove active class from all buttons and pages
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                pages.forEach(page => page.classList.remove('active'));
+
+                // Add active class to clicked button and corresponding page
+                button.classList.add('active');
+                document.getElementById(targetPage).classList.add('active');
+
+                // Scroll to top
+                window.scrollTo(0, 0);
+            });
+        });
+    </script>
+</body>
+</html>
