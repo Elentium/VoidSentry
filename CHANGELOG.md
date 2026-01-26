@@ -1,3 +1,7 @@
+### 0.0.7:
+- Added new type (Instance)
+- Reworked serializers for better performance
+
 ### 0.0.6:
 - Fixed default.project.json
 

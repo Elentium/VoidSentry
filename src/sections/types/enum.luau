@@ -1,14 +1,16 @@
 --!strict
-
-local w_u16 = buffer.writeu16
-local r_u16 = buffer.readu16
+local buffer_writer = require("../buffer_writer")
 local Config = require("../shared/Config")
+
+-- localize buffer_writer functions
+local writeu16 = buffer_writer.writeu16
+-- localize buffer read functions
+local readu16 = buffer.readu16
 
 return function(Enum: Enum)
 	return {
 		name = "enum",
-		bytes = 2,
-		write = @native function(b: buffer, offset: number, value: EnumItem): number
+		write = @native function(value: EnumItem): ()
 			if Config.VALIDATION_LEVEL >= 2 then
 				if typeof(value) ~= "EnumItem" then
 					error(`enum.write: Expected EnumItem, got {typeof(value)}`)
@@ -17,12 +19,10 @@ return function(Enum: Enum)
 					error(`enum.write: EnumItem belongs to {value.EnumType}, expected {Enum}`)
 				end
 			end
-			w_u16(b, offset, value.Value)
-			return offset + 2
+			writeu16(value.Value)
 		end,
-		read = @native function(b: buffer, offset: number): (EnumItem, number)
-			local value = Enum:FromValue(r_u16(b, offset))
-			return value, offset + 2
+		read = @native function(b: buffer, cursor: number): (EnumItem, number)
+			return Enum:FromValue(readu16(b, cursor)), cursor + 2
 		end,
 	}
 end

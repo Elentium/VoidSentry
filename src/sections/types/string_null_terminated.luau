@@ -1,33 +1,32 @@
 --!strict
-local w_string = buffer.writestring
-local r_string = buffer.readstring
-local r_u8 = buffer.readu8
+local buffer_writer = require("../buffer_writer")
+
+-- localize buffer_writer functions
+local writestring = buffer_writer.writestring
+local writeu8 = buffer_writer.writeu8
+-- localize buffer read functions
+local readu8 = buffer.readu8
+local readstring = buffer.readstring
 
 return {
 	name = "string_null_terminated",
-	bytes = function(value: string): number
-		return #value + 1 -- +1 for null terminator
-	end,
-	write = @native function(b: buffer, offset: number, value: string): number
-		w_string(b, offset, value)
-		offset += #value
+	write = @native function(value: string): ()
+		writestring(value)
 		-- write null terminator
-		buffer.writeu8(b, offset, 0)
-		return offset + 1
+		writeu8(0)
 	end,
-	read = @native function(b: buffer, offset: number): (string, number)
+	read = @native function(b: buffer, cursor: number): (string, number)
 		local len = 0
 		
 		-- find null terminator
 		while true do
-			local byte = r_u8(b, offset + len)
+			local byte = readu8(b, cursor + len)
 			if byte == 0 then
 				break
 			end
 			len += 1
 		end
 		
-		local value = r_string(b, offset, len)
-		return value, offset + len + 1 -- +1 for null terminator
+		return readstring(b, cursor, len), cursor + len + 1 -- +1 for null terminator
 	end,
 }

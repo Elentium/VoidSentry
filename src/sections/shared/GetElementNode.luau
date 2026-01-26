@@ -7,6 +7,7 @@ local array = require("../types/array")
 local array_tiny = require("../types/array_tiny")
 local map = require("../types/map")
 local enum = require("../types/enum")
+local instance = require("../types/instance")
 
 -- the purpose of this function is to handle nodes like Array, Map that need a function call to return a node
 -- instead of writing it in every single place we just have this one function
@@ -27,6 +28,13 @@ return function(variant: any, value: any): TypeNode
 				return variant(value.EnumType)
 			else
 				error(`GetElementNode: Expected EnumItem for enum type, got {typeof(value)}`)
+			end
+		elseif variant == instance then
+			-- for Instance, get the class name from the Instance value
+			if typeof(value) == "Instance" then
+				return variant(value.ClassName)
+			else
+				error(`GetElementNode: Expected Instance for instance type, got {typeof(value)}`)
 			end
 		end
 	end

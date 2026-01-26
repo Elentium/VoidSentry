@@ -1,24 +1,19 @@
 --!strict
 local f24 = require("./float24")
-local write = f24.write
-local read = f24.read
 local vec3_new = Vector3.new
 
 return {
 	name = "vector3_f24",
-	bytes = 9,
-	write = @native function(b: buffer, offset: number, value: Vector3): number
-		offset = write(b, offset, value.X)
-		offset = write(b, offset, value.Y)
-		offset = write(b, offset, value.Z)
-		return offset
+	write = @native function(value: Vector3): ()
+		f24.write(value.X)
+		f24.write(value.Y)
+		f24.write(value.Z)
 	end,
-	read = @native function(b: buffer, offset: number): (Vector3, number)
-		local a = {}
-		for i = 1, 3 do
-			a[i], offset = read(b, offset)
-		end
-		local value = vec3_new(a[1], a[2], a[3])
-		return value, offset
+	read = @native function(b: buffer, cursor: number): (Vector3, number)
+		local x, y, z
+		x, cursor = f24.read(b, cursor)
+		y, cursor = f24.read(b, cursor)
+		z, cursor = f24.read(b, cursor)
+		return vec3_new(x, y, z), cursor
 	end,
 }

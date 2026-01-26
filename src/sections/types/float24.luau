@@ -1,7 +1,5 @@
 --!strict
-local w_u8 = buffer.writeu8
-local r_u8 = buffer.readu8
-local b_fill = buffer.fill
+local buffer_writer = require("../buffer_writer")
 local math_frexp = math.frexp
 local math_clamp = math.clamp
 local math_floor = math.floor
@@ -9,13 +7,18 @@ local math_pow = math.pow
 local bit32_extract = bit32.extract
 local bit32_lshift = bit32.lshift
 
+-- localize buffer_writer functions
+local fill = buffer_writer.fill
+local writeu8 = buffer_writer.writeu8
+-- localize buffer read functions
+local readu8 = buffer.readu8
+
 return {
 	name = "float24",
-	bytes = 3,
-	write = @native function(b: buffer, offset: number, value: number): number
+	write = @native function(value: number): ()
 		if value == 0 then
-			b_fill(b, offset, 0, 3)
-			return offset + 3
+			fill(0, 3)
+			return
 		end
 
 		local sign = 0
@@ -32,30 +35,28 @@ return {
 		local m = math_floor((mantissa * 2 - 1) * 65536 + 0.5)
 
 		-- pack: [S EEEEEEE] [MMMMMMMM] [MMMMMMMM]
-		w_u8(b, offset, (sign * 128) + e)
-		w_u8(b, offset + 1, bit32_extract(m, 8, 8))
-		w_u8(b, offset + 2, bit32_extract(m, 0, 8))
-
-		return offset + 3
+		writeu8((sign * 128) + e)
+		writeu8(bit32_extract(m, 8, 8))
+		writeu8(bit32_extract(m, 0, 8))
 	end,
 
-	read = @native function(b: buffer, offset: number): (number, number)
-		local b1 = r_u8(b, offset)
-		local b2 = r_u8(b, offset + 1)
-		local b3 = r_u8(b, offset + 2)
+	read = @native function(b: buffer, cursor: number): (number, number)
+		local b1 = readu8(b, cursor)
+		local b2 = readu8(b, cursor + 1)
+		local b3 = readu8(b, cursor + 2)
 
 		local sign = bit32_extract(b1, 7, 1) == 1 and -1 or 1
 		local exponent = bit32_extract(b1, 0, 7)
 		local m_raw = bit32_lshift(b2, 8) + b3
 
 		if exponent == 0 and m_raw == 0 then
-			return 0, offset + 3
+			return 0, cursor + 3
 		end
 
 		-- reconstruct: (1 + m/2^16) * 2^(e - bias - 1)
 		local mantissa = (m_raw / 65536) + 1
 		local value = sign * mantissa * math_pow(2, exponent - 63 - 1)
 
-		return value, offset + 3
+		return value, cursor + 3
 	end,
 }

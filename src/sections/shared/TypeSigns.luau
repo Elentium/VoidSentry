@@ -1,4 +1,4 @@
-return {
+local TypeSigns = {
 	-- each type sign is 1 byte
 	-- integer number (4 bytes)
 	INT32 = 1,
@@ -48,4 +48,16 @@ return {
 	BITS = 23,
 	-- enum (2 bytes - enum value)
 	ENUM = 24,
+	-- instance (variable - class name + struct data)
+	INSTANCE = 25,
 }
+
+-- create reverse mapping (number -> name) for deserialization
+local TypeSignsReverse: { [number]: string } = {}
+for name, sign in TypeSigns do
+	TypeSignsReverse[sign] = name
+end
+
+TypeSigns.Reverse = TypeSignsReverse
+
+return TypeSigns

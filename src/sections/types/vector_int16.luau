@@ -1,19 +1,24 @@
 --!strict
-local write = buffer.writei16
-local read = buffer.readi16
+local buffer_writer = require("../buffer_writer")
 local vec_new = vector.create
+
+-- localize buffer_writer functions
+local writei16 = buffer_writer.writei16
+-- localize buffer read functions
+local readi16 = buffer.readi16
 
 return {
 	name = "vector_int16",
-	bytes = 6,
-	write = @native function(b: buffer, offset: number, value: vector): number
-		write(b, offset, value.x)
-		write(b, offset + 2, value.y)
-		write(b, offset + 4, value.z)
-		return offset + 6
+	write = @native function(value: vector): ()
+		writei16(value.x)
+		writei16(value.y)
+		writei16(value.z)
 	end,
-	read = @native function(b: buffer, offset: number): (vector, number)
-		local x, y, z = read(b, offset), read(b, offset + 2), read(b, offset + 4)
-		return vec_new(x, y, z), offset + 6
+	read = @native function(b: buffer, cursor: number): (vector, number)
+		return vec_new(
+			readi16(b, cursor),
+			readi16(b, cursor + 2),
+			readi16(b, cursor + 4)
+		), cursor + 6
 	end,
 }

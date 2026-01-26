@@ -1,8 +1,6 @@
 export type typeNode = {
 	name: string,
-	bytes: number | (value: any) -> number,
-
-	write: (b: buffer, offset: number, value: any) -> number,
-	read: (b: buffer, offset: number) -> (any, number),
+	write: (value: any) -> (),
+	read: (b: buffer, cursor: number) -> (any, number),
 }
 return {}

@@ -1,5 +1,5 @@
 --[[
-	VoidSentry V0.0.6
+	VoidSentry V0.0.7
 
 	Copyright 2026 IAMNOTULTRA3
 
@@ -9,7 +9,6 @@
 --!optimize 2
 
 local export_type_node = require("@self/sections/exports/type_node")
-type TypeNode = export_type_node.typeNode
 
 export type DynamicSerializer = {
 	serialize: (compressLevel: number?, offset: number?, ...any) -> buffer,
@@ -20,7 +19,7 @@ type SerializeFn<T...> = (self: StaticObject<T...>, offset: number?, T...) -> bu
 type DeserializeFn<T...> = (self: StaticObject<T...>, offset: number?, b: buffer) -> T...
 
 export type StaticObject<T...> = {
-	schema: { TypeNode },
+	schema: { export_type_node.typeNode },
 	compressionLevel: number?,
 	serialize: SerializeFn<T...>,
 	deserialize: DeserializeFn<T...>,
@@ -79,6 +78,7 @@ local VoidSentry = {
 			_32: (count: number) -> { number },
 		},
 		Enum = (require("@self/sections/types/enum") :: any) :: <T>(Enum: T & Enum) -> T,
+		Instance = (require("@self/sections/types/instance") :: any) :: (ClassName: string) -> Instance,
 	},
 }
 

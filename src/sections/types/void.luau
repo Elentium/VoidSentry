@@ -1,10 +1,9 @@
 return {
 	name = "void",
-	bytes = 0,
-	write = function(b: buffer, offset: number, value: {}): number
-		return offset
+	write = function(value: {}): ()
+		-- void writes nothing
 	end,
-	read = function(b: buffer, offset: number): ({}, number)
-		return {}, offset
+	read = function(b: buffer, cursor: number): ({}, number)
+		return {}, cursor
 	end,
 }

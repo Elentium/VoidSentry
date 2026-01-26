@@ -5,16 +5,18 @@
 local EncodingService = game:GetService("EncodingService")
 
 -- [ Variables ]
-local TypeSigns: { [string | number]: string | number } =
-	require("./shared/TypeSigns") :: { [string | number]: string | number }
--- reverse
-for name, sign in TypeSigns do
-	TypeSigns[sign] = name
-end
+local buffer_writer = require("./buffer_writer")
+local TypeSigns = require("./shared/TypeSigns")
+
+-- localize buffer_writer functions
+local write_init = buffer_writer.init
+local write_get_cursor = buffer_writer.get_cursor
+local write_get_buffer = buffer_writer.get_buffer
 
 -- localize
 local blen = buffer.len
 local b_create = buffer.create
+local b_copy = buffer.copy
 
 -- init types
 local export_type_node = require("./exports/type_node")
@@ -24,9 +26,10 @@ type typeNode = export_type_node.typeNode
 local types: {
 	[string]: typeNode | ((...any) -> typeNode),
 } = {}
-for type: string | number in TypeSigns do
-	if typeof(type) == "string" then
-		types[type :: string] = require(`./types/{(type :: string):lower()}`)
+for type, sign in TypeSigns do
+	-- skip the Reverse table and only process string type names with numeric signs
+	if typeof(type) == "string" and typeof(sign) == "number" then
+		types[type] = require(`./types/{type:lower()}`)
 	end
 end
 
@@ -35,47 +38,25 @@ local GetElementNode = require("./shared/GetElementNode")
 local BuildTypeNode = require("./shared/BuildTypeNode")
 local WriteTypeSignsRecursive = require("./shared/WriteTypeSignsRecursive")
 
--- helper function to calculate size including type signs for nested types
-local function CalculateSizeWithTypeSigns(typeNode: typeNode, value: any): number
-	local size = 1 -- 1 byte for the type sign itself
-
-	local typeName = typeNode.name
-	-- for Enum types, we store the Enum type name (2 bytes length + string length)
-	if typeName == "enum" then
-		local enumTypeName = tostring(value.EnumType)
-		size += 2 + #enumTypeName -- 2 bytes for length, then string bytes
-	end
-
-	local bytes = typeNode.bytes
-	if typeof(bytes) == "function" then
-		size += (bytes :: (value: any) -> number)(value)
-	else
-		size += bytes :: number
-	end
-
-	return size
-end
-
 -- [ API ]
 local serializer = {}
 
-function serializer.serialize(compressLevel: number?, offset: number?, ...: any): buffer
+function serializer.serialize(compressLevel: number?, start_cursor: number?, ...: any): buffer
 	-- validation: compression level range check
 	if Config.VALIDATION_LEVEL >= 1 then
 		if typeof(compressLevel) == "number" and (compressLevel < -7 or compressLevel > 22) then
 			error(`Invalid compression level: {compressLevel}. Must be between -7 and 22`)
 		end
 
-		-- validation: offset check
-		if offset ~= nil and offset < 0 then
-			error(`Invalid offset: {offset}. Must be >= 0`)
+		-- validation: cursor check
+		if start_cursor ~= nil and start_cursor < 0 then
+			error(`Invalid cursor: {start_cursor}. Must be >= 0`)
 		end
 	end
 
 	local input = table.pack(...)
 	local inputCount = input.n
 	local writes: { { typeNode: typeNode, value: any } } = table.create(inputCount)
-	local totalSize = offset or 0
 
 	for i = 1, inputCount do
 		local value = input[i]
@@ -86,19 +67,26 @@ function serializer.serialize(compressLevel: number?, offset: number?, ...: any)
 
 		local typeModule = types[type]
 		local typeNode = GetElementNode(typeModule, value)
-
-		totalSize += CalculateSizeWithTypeSigns(typeNode, value)
 		writes[i] = { typeNode = typeNode, value = value }
 	end
 
-	local currentOffset = offset or 0
-	local b = b_create(totalSize)
+	write_init(start_cursor)
 
 	for _, write in writes do
 		-- write type signs recursively (including nested types)
-		currentOffset = WriteTypeSignsRecursive(b, currentOffset, write.typeNode, write.value, types)
+		WriteTypeSignsRecursive(write.typeNode, write.value)
 		-- write the actual value data
-		currentOffset = write.typeNode.write(b, currentOffset, write.value)
+		write.typeNode.write(write.value)
+	end
+
+	-- trim the buffer to actual size
+	local cursor = write_get_cursor()
+	local b = write_get_buffer()
+	local len = blen(b)
+	if len > cursor then
+		local old_buf = b
+		b = b_create(cursor)
+		b_copy(b, 0, old_buf, 0, cursor)
 	end
 
 	if typeof(compressLevel) == "number" then
@@ -108,16 +96,16 @@ function serializer.serialize(compressLevel: number?, offset: number?, ...: any)
 	return b
 end
 
-function serializer.deserialize(compressLevel: number?, offset: number?, b: buffer): ...any
+function serializer.deserialize(compressLevel: number?, cursor: number?, b: buffer): ...any
 	-- validation: compression level range check
 	if Config.VALIDATION_LEVEL >= 1 then
 		if typeof(compressLevel) == "number" and (compressLevel < -7 or compressLevel > 22) then
 			error(`Invalid compression level: {compressLevel}. Must be between -7 and 22`)
 		end
 
-		-- validation: offset check
-		if offset ~= nil and offset < 0 then
-			error(`Invalid offset: {offset}. Must be >= 0`)
+		-- validation: cursor check
+		if cursor ~= nil and cursor < 0 then
+			error(`Invalid cursor: {cursor}. Must be >= 0`)
 		end
 	end
 
@@ -126,18 +114,18 @@ function serializer.deserialize(compressLevel: number?, offset: number?, b: buff
 	end
 
 	local len = blen(b)
-	local currentOffset = offset or 0
+	cursor = cursor or 0
 	local result = {}
 	local resultCount = 0
 
-	while currentOffset < len do
+	while cursor < len do
 		-- build type node recursively from serialized type signs
 		local typeNode: typeNode
-		typeNode, currentOffset = BuildTypeNode(b, currentOffset)
+		typeNode, cursor = BuildTypeNode(b, cursor)
 
 		-- read the actual value using the type node
 		local val: any
-		val, currentOffset = typeNode.read(b, currentOffset)
+		val, cursor = typeNode.read(b, cursor)
 		resultCount += 1
 		result[resultCount] = val
 	end

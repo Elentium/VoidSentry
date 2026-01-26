@@ -5,27 +5,19 @@ type TypeNode = type_node_export.typeNode
 return function<T>(Struct: { [any]: TypeNode } & T)
 	return {
 		name = "struct",
-		bytes = @native function(value: { [any]: TypeNode } & T): number
-			local total = 0
+		_schema = Struct, -- expose schema for Instance type iteration
+		write = @native function(value: { [any]: any }): ()
 			for k, v in Struct :: { [any]: TypeNode } do
-				total += (typeof(v.bytes) == "function" and (v.bytes :: (value: any) -> number)((value :: any)[k]) or v.bytes :: number) :: number
+				v.write((value :: { [any]: TypeNode })[k])
 			end
-			return total
 		end,
 
-		write = @native function(b: buffer, offset: number, value: { [any]: any }): number
-			for k, v in Struct :: { [any]: TypeNode } do
-				offset = v.write(b, offset, (value :: { [any]: TypeNode })[k])
-			end
-			return offset
-		end,
-
-		read = @native function(b: buffer, offset: number): ({ [any]: TypeNode }, number)
+		read = @native function(b: buffer, cursor: number): ({ [any]: TypeNode }, number)
 			local value = {}
 			for k, v in Struct :: { [any]: TypeNode } do
-				value[k], offset = v.read(b, offset)
+				value[k], cursor = v.read(b, cursor)
 			end
-			return value, offset
+			return value, cursor
 		end,
 	}
 end

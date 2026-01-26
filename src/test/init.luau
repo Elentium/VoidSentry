@@ -312,6 +312,151 @@ testStatic(
 )
 testDynamic("ENUM_HUMANOID_STATE", Enum.HumanoidStateType.Running)
 
+-- ========== INSTANCE TYPES ==========
+print("\n========== INSTANCE TYPES ==========\n")
+
+-- Create test Part instance
+local testPart = Instance.new("Part")
+testPart.Name = "TestPart"
+testPart.CFrame = CFrame.new(10, 20, 30)
+testPart.Color = Color3.new(1, 0.5, 0.25)
+testPart.Transparency = 0.5
+testPart.Material = Enum.Material.Neon
+testPart.CanCollide = false
+testPart.CanTouch = true
+testPart.CanQuery = false
+testPart.CastShadow = true
+
+print("___________ INSTANCE_PART (STATIC) ____________")
+local PartSerializer = StaticSerializer.new(0, Types.Instance("Part"))
+local b_part = PartSerializer:serialize(nil, testPart)
+print(`Buffer size: {buffer.len(b_part)}`)
+local deserializedPart: Part = PartSerializer:deserialize(nil, b_part)
+print("Original Part:", testPart.Name, testPart.CFrame, testPart.Color, testPart.Transparency, testPart.Material)
+print(
+	"Deserialized Part:",
+	deserializedPart.Name,
+	deserializedPart.CFrame,
+	deserializedPart.Color,
+	deserializedPart.Transparency,
+	deserializedPart.Material
+)
+print(
+	"Properties match:",
+	deserializedPart.Name == testPart.Name,
+	deserializedPart.CFrame == testPart.CFrame,
+	deserializedPart.Transparency == testPart.Transparency,
+	deserializedPart.CanCollide == testPart.CanCollide
+)
+benchmark(`INSTANCE_PART serialize`, DEFAULT_BENCH_ITERATIONS, function()
+	PartSerializer:serialize(nil, testPart)
+end)
+benchmark(`INSTANCE_PART deserialize`, DEFAULT_BENCH_ITERATIONS, function()
+	PartSerializer:deserialize(nil, b_part)
+end)
+print("________________________")
+
+print("___________ INSTANCE_PART (DYNAMIC) ____________")
+local b_part_dynamic = DynamicSerializer.serialize(nil, nil, testPart)
+print(`Buffer size: {buffer.len(b_part_dynamic)}`)
+local deserializedPartDynamic: Part = DynamicSerializer.deserialize(nil, nil, b_part_dynamic)
+print("Original Part:", testPart.Name, testPart.CFrame, testPart.Color)
+print("Deserialized Part:", deserializedPartDynamic.Name, deserializedPartDynamic.CFrame, deserializedPartDynamic.Color)
+benchmark(`INSTANCE_PART_DYNAMIC serialize`, DEFAULT_BENCH_ITERATIONS, function()
+	DynamicSerializer.serialize(nil, nil, testPart)
+end)
+benchmark(`INSTANCE_PART_DYNAMIC deserialize`, DEFAULT_BENCH_ITERATIONS, function()
+	DynamicSerializer.deserialize(nil, nil, b_part_dynamic)
+end)
+print("________________________")
+
+-- Test MeshPart
+local testMeshPart = Instance.new("MeshPart")
+testMeshPart.Name = "TestMeshPart"
+testMeshPart.CFrame = CFrame.new(100, 50, 200)
+testMeshPart.Color = Color3.new(0, 1, 0)
+testMeshPart.Transparency = 0.25
+testMeshPart.Material = Enum.Material.Glass
+testMeshPart.CanCollide = true
+testMeshPart.CanTouch = false
+testMeshPart.CanQuery = true
+testMeshPart.CastShadow = false
+
+print("___________ INSTANCE_MESHPART (STATIC) ____________")
+local MeshPartSerializer = StaticSerializer.new(0, Types.Instance("MeshPart"))
+local b_meshpart = MeshPartSerializer:serialize(nil, testMeshPart)
+print(`Buffer size: {buffer.len(b_meshpart)}`)
+local deserializedMeshPart: MeshPart = MeshPartSerializer:deserialize(nil, b_meshpart)
+print("Original MeshPart:", testMeshPart.Name, testMeshPart.CFrame, testMeshPart.Color, testMeshPart.Material)
+print(
+	"Deserialized MeshPart:",
+	deserializedMeshPart.Name,
+	deserializedMeshPart.CFrame,
+	deserializedMeshPart.Color,
+	deserializedMeshPart.Material
+)
+benchmark(`INSTANCE_MESHPART serialize`, DEFAULT_BENCH_ITERATIONS, function()
+	MeshPartSerializer:serialize(nil, testMeshPart)
+end)
+benchmark(`INSTANCE_MESHPART deserialize`, DEFAULT_BENCH_ITERATIONS, function()
+	MeshPartSerializer:deserialize(nil, b_meshpart)
+end)
+print("________________________")
+
+-- Test Array of Instances
+print("___________ INSTANCE_ARRAY (STATIC) ____________")
+local InstanceArraySerializer = StaticSerializer.new(0, Types.ArrayTiny(Types.Instance("Part")))
+-- Note: This test assumes both parts are serialized with Part schema
+-- Create two Part instances for this test
+local part1 = Instance.new("Part")
+part1.Name = "Part1"
+part1.CFrame = CFrame.new(1, 2, 3)
+part1.Color = Color3.new(1, 0, 0)
+part1.Transparency = 0.1
+part1.Material = Enum.Material.Plastic
+part1.CanCollide = true
+part1.CanTouch = true
+part1.CanQuery = true
+part1.CastShadow = true
+
+local part2 = Instance.new("Part")
+part2.Name = "Part2"
+part2.CFrame = CFrame.new(4, 5, 6)
+part2.Color = Color3.new(0, 1, 0)
+part2.Transparency = 0.2
+part2.Material = Enum.Material.Metal
+part2.CanCollide = false
+part2.CanTouch = false
+part2.CanQuery = false
+part2.CastShadow = false
+
+local partsArray: { Part } = { part1, part2 }
+local b_parts_array = InstanceArraySerializer:serialize(nil, partsArray)
+print(`Buffer size: {buffer.len(b_parts_array)}`)
+local deserializedPartsArray: { Part } = InstanceArraySerializer:deserialize(nil, b_parts_array)
+print("Original array length:", #partsArray)
+print("Deserialized array length:", #deserializedPartsArray)
+print("First part name:", deserializedPartsArray[1].Name, "Second part name:", deserializedPartsArray[2].Name)
+benchmark(`INSTANCE_ARRAY serialize`, DEFAULT_BENCH_ITERATIONS, function()
+	InstanceArraySerializer:serialize(nil, partsArray)
+end)
+benchmark(`INSTANCE_ARRAY deserialize`, DEFAULT_BENCH_ITERATIONS, function()
+	InstanceArraySerializer:deserialize(nil, b_parts_array)
+end)
+print("________________________")
+
+-- Clean up test instances
+testPart:Destroy()
+testMeshPart:Destroy()
+part1:Destroy()
+part2:Destroy()
+for _, p in deserializedPartsArray :: { Part } do
+	p:Destroy()
+end
+deserializedPart:Destroy()
+deserializedPartDynamic:Destroy()
+deserializedMeshPart:Destroy()
+
 -- ========== DEEP NESTED TYPES ==========
 print("\n========== DEEP NESTED TYPES ==========\n")
 
@@ -374,52 +519,77 @@ expectError("STRING_TINY_TOO_LONG", function()
 	local s = string.rep("a", 256)
 	local ser = StaticSerializer.new(0, Types.StringTiny)
 	ser:serialize(nil, s)
+	return nil
 end)
 
 expectError("ARRAY_TINY_TOO_LONG", function()
 	local arr = buildArray(256, 1)
 	local ser = StaticSerializer.new(0, Types.ArrayTiny(Types.UInt8))
 	ser:serialize(nil, arr)
+	return nil
 end)
 
 expectError("BOOL_PACKED_BAD_LEN", function()
 	local ser = StaticSerializer.new(0, Types.BoolPacked)
 	ser:serialize(nil, { true, false })
+	return nil
 end)
 
 expectError("BITS_COUNT_MISMATCH", function()
 	local ser = StaticSerializer.new(0, Types.Bits._16(2))
 	ser:serialize(nil, { 1 })
+	return nil
 end)
 
 expectError("INT8_OUT_OF_RANGE", function()
 	local ser = StaticSerializer.new(0, Types.Int8)
 	ser:serialize(nil, 200)
+	return nil
 end)
 
 expectError("UINT8_OUT_OF_RANGE", function()
 	local ser = StaticSerializer.new(0, Types.UInt8)
 	ser:serialize(nil, -1)
+	return nil
 end)
 
 expectError("INT16_OUT_OF_RANGE", function()
 	local ser = StaticSerializer.new(0, Types.Int16)
 	ser:serialize(nil, 40000)
+	return nil
 end)
 
 expectError("UINT16_OUT_OF_RANGE", function()
 	local ser = StaticSerializer.new(0, Types.UInt16)
 	ser:serialize(nil, -1)
+	return nil
 end)
 
 expectError("INT32_OUT_OF_RANGE", function()
 	local ser = StaticSerializer.new(0, Types.Int32)
 	ser:serialize(nil, 2147483648)
+	return nil
 end)
 
 expectError("UINT32_OUT_OF_RANGE", function()
 	local ser = StaticSerializer.new(0, Types.UInt32)
 	ser:serialize(nil, -1)
+	return nil
+end)
+
+expectError("INSTANCE_INVALID_CLASS", function()
+	-- Try to create serializer for unsupported class
+	Types.Instance("UnsupportedClassName")
+	return nil
+end)
+
+expectError("INSTANCE_CLASS_MISMATCH", function()
+	-- Try to serialize a MeshPart with a Part serializer (class mismatch)
+	local ser = StaticSerializer.new(0, Types.Instance("Part"))
+	local meshPart = Instance.new("MeshPart")
+	ser:serialize(nil, meshPart)
+	meshPart:Destroy()
+	return nil
 end)
 
 -- ========== COMPRESSION TESTS ==========

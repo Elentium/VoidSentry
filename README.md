@@ -30,7 +30,7 @@ Add VoidSentry to your `wally.toml`:
 
 ```toml
 [dependencies]
-VoidSentry = "elentium/voidsentry@0.0.6"
+VoidSentry = "elentium/voidsentry@0.0.7"
 ```
 
 Then run:
@@ -225,6 +225,7 @@ Deserializes data with embedded type information.
 | `Types.CFrameQ` | Quaternion CFrame | 28 bytes |
 | `Types.Color3` | RGB color | 3 bytes |
 | `Types.Enum` | Enum value (requires Enum parameter) | 2 bytes |
+| `Types.Instance` | Roblox Instance (requires ClassName) | Variable |
 
 ### Collection Types
 
@@ -325,6 +326,41 @@ local b = Serializer:serialize(nil, Enum.Material.Plastic)
 -- Deserialize
 local material = Serializer:deserialize(nil, b)
 ```
+
+#### `Types.Instance(ClassName)`
+
+Serializes a Roblox Instance by its properties. Requires pre-defined serialization schemas for each class.
+
+**Currently supported classes:**
+
+- `Part` - Serializes Name, CFrame, Color, Transparency, Material, CanCollide, CanTouch, CanQuery, CastShadow
+- `MeshPart` - Same properties as Part
+
+```luau
+-- Static serialization
+local PartSerializer = VoidSentry.Static.new(nil, Types.Instance("Part"))
+
+local part = Instance.new("Part")
+part.Name = "MyPart"
+part.CFrame = CFrame.new(10, 5, 0)
+part.Color = Color3.new(1, 0, 0)
+part.Transparency = 0.5
+
+local b = PartSerializer:serialize(nil, part)
+
+-- Deserialize creates a new Instance with the serialized properties
+local deserializedPart = PartSerializer:deserialize(nil, b)
+```
+
+**Dynamic serialization** also supports Instance types:
+
+```luau
+local part = workspace.SomePart
+local b = VoidSentry.Dynamic.serialize(nil, nil, part)
+local deserializedPart = VoidSentry.Dynamic.deserialize(nil, nil, b)
+```
+
+> **Note:** The Instance type creates new instances on deserialization. It does not preserve parent-child relationships or references to other instances. For custom classes, you can extend the serialization data in `src/sections/types/instance/serialize_data.luau`.
 
 ## Usage Examples
 

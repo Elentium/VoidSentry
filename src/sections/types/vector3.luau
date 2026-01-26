@@ -1,19 +1,24 @@
 --!strict
-local w_f32 = buffer.writef32
-local r_f32 = buffer.readf32
+local buffer_writer = require("../buffer_writer")
 local vec3_new = Vector3.new
+
+-- localize buffer_writer functions
+local writef32 = buffer_writer.writef32
+-- localize buffer read functions
+local readf32 = buffer.readf32
 
 return {
 	name = "vector3",
-	bytes = 12,
-	write = @native function(b: buffer, offset: number, value: Vector3): number
-		w_f32(b, offset, value.X)
-		w_f32(b, offset + 4, value.Y)
-		w_f32(b, offset + 8, value.Z)
-		return offset + 12
+	write = @native function(value: Vector3): ()
+		writef32(value.X)
+		writef32(value.Y)
+		writef32(value.Z)
 	end,
-	read = @native function(b: buffer, offset: number): (Vector3, number)
-		local value = vec3_new(r_f32(b, offset), r_f32(b, offset + 4), r_f32(b, offset + 8))
-		return value, offset + 12
+	read = @native function(b: buffer, cursor: number): (Vector3, number)
+		return vec3_new(
+			readf32(b, cursor),
+			readf32(b, cursor + 4),
+			readf32(b, cursor + 8)
+		), cursor + 12
 	end,
 }

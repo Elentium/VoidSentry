@@ -43,6 +43,8 @@ return function(Element: any): string
 		return "VECTOR"
 	elseif elemType == "EnumItem" then
 		return "ENUM"
+	elseif elemType == "Instance" then
+		return "INSTANCE"
 	elseif elemType == "table" then
 		local is_empty = next(Element) == nil
 		if is_empty then

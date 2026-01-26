@@ -1,57 +1,27 @@
+local buffer_writer = require("../buffer_writer")
 local GetElementType = require("../shared/GetElementType")
 local TypeSigns = require("../shared/TypeSigns")
 local export_type_node = require("../exports/type_node")
 local GetElementNode = require("../shared/GetElementNode")
+local BuildTypeNode = require("../shared/BuildTypeNode")
+
+-- localize buffer_writer functions
+local writeu8 = buffer_writer.writeu8
+local writeu16 = buffer_writer.writeu16
+local writestring = buffer_writer.writestring
 
 type TypeNode = export_type_node.typeNode
-
-local w_u8 = buffer.writeu8
-local w_u16 = buffer.writeu16
-local w_string = buffer.writestring
 
 local mapModule = require("./map")
 local arrayModule = require("./array")
 local array_tinyModule = require("./array_tiny")
 local enumModule = require("./enum")
+local instanceModule = require("./instance")
 
 local anyType
 anyType = {
 	name = "any",
-	bytes = function(v: any): number
-		local t = GetElementType(v)
-
-		-- for arrays and maps, use Any type for elements to support mixed types
-		local mod: TypeNode
-		if t == "ARRAY" then
-			mod = arrayModule(anyType)
-		elseif t == "ARRAY_TINY" then
-			mod = array_tinyModule(anyType)
-		elseif t == "MAP" then
-			mod = mapModule(anyType, anyType)
-		elseif t == "ENUM" then
-			mod = enumModule(v.EnumType)
-		else
-			mod = GetElementNode(require(`./{t:lower()}`), v)
-		end
-
-		local baseSize = typeof(mod.bytes) == "function" and (mod.bytes :: (value: any) -> number)(v)
-			or mod.bytes :: number
-
-		-- calculate total size including type signs
-		local typeSignBytes = 1 -- main type sign
-
-		-- for Enum types, we need to also store the Enum type name (2 bytes length + string length)
-		if t == "ENUM" then
-			local enumTypeName = tostring(v.EnumType)
-			typeSignBytes += 2 + #enumTypeName -- 2 bytes for length, then string bytes
-		end
-
-		-- for arrays and maps in dynamic serialization, we don't write nested type signs
-		-- since they always have 'any' types
-
-		return baseSize + typeSignBytes
-	end,
-	write = @native function(b: buffer, offset: number, value: any): number
+	write = @native function(value: any): ()
 		local t = GetElementType(value)
 
 		-- for arrays and maps, use Any type for elements to support mixed types
@@ -64,6 +34,8 @@ anyType = {
 			mod = mapModule(anyType, anyType)
 		elseif t == "ENUM" then
 			mod = enumModule(value.EnumType)
+		elseif t == "INSTANCE" then
+			mod = instanceModule(value.ClassName)
 		else
 			mod = GetElementNode(require(`./{t:lower()}`), value)
 		end
@@ -72,35 +44,34 @@ anyType = {
 		local typeName = mod.name
 		local baseType = typeName:upper()
 		local sign = TypeSigns[baseType] :: number
-		w_u8(b, offset, sign)
-		offset += 1
+		writeu8(sign)
 
 		-- for Enum types, write the Enum type name so BuildTypeNode can reconstruct it
 		if t == "ENUM" then
 			local enumTypeName = tostring(value.EnumType)
-			local nameLen = #enumTypeName
-			w_u16(b, offset, nameLen)
-			offset += 2
-			w_string(b, offset, enumTypeName)
-			offset += nameLen
+			writeu16(#enumTypeName)
+			writestring(enumTypeName)
+		-- for Instance types, write the class name so BuildTypeNode can reconstruct it
+		elseif t == "INSTANCE" then
+			local className = value.ClassName
+			writeu8(#className)
+			writestring(className)
 		end
 
 		-- for arrays and maps in dynamic serialization, we don't write nested type signs
 		-- since they always have 'any' types. BuildTypeNode will assume 'any' when reading.
 
 		-- write the actual value
-		offset = mod.write(b, offset, value)
-		return offset
+		mod.write(value)
 	end,
-	read = @native function(b: buffer, offset: number): (any, number)
+	read = @native function(b: buffer, cursor: number): (any, number)
 		-- build the type node recursively
-		local BuildTypeNode = require("../shared/BuildTypeNode")
 		local mod: TypeNode
-		mod, offset = BuildTypeNode(b, offset) -- BuildTypeNode reads the type sign and advances offset
+		mod, cursor = BuildTypeNode(b, cursor) -- BuildTypeNode reads the type sign and advances cursor
 		-- read the value
 		local value: any
-		value, offset = mod.read(b, offset)
-		return value, offset
+		value, cursor = mod.read(b, cursor)
+		return value, cursor
 	end,
 }
 

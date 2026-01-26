@@ -5,12 +5,20 @@
 local EncodingService = game:GetService("EncodingService")
 
 -- [ Variables ]
+local buffer_writer = require("./buffer_writer")
 local export_type_node = require("./exports/type_node")
 local Config = require("./shared/Config")
+
+-- localize buffer_writer functions
+local write_init = buffer_writer.init
+local write_get_cursor = buffer_writer.get_cursor
+local write_get_buffer = buffer_writer.get_buffer
 
 type TypeNode = export_type_node.typeNode
 
 -- localize
+local blen = buffer.len
+local b_copy = buffer.copy
 local b_create = buffer.create
 
 -- [ API ]
@@ -31,7 +39,7 @@ function serializer.new(compressionLevel: number?, ...: TypeNode)
 	return self
 end
 
-function serializer:serialize(offset: number?, ...: any): buffer
+function serializer:serialize(start_cursor: number?, ...: any): buffer
 	local input = table.pack(...)
 	local schema: { TypeNode } = self.schema
 
@@ -57,23 +65,27 @@ function serializer:serialize(offset: number?, ...: any): buffer
 			error(`Schema mismatch: expected {schemaCount} values, got {inputCount}`)
 		end
 
-		if offset ~= nil and offset < 0 then
-			error(`Invalid offset: {offset}. Must be >= 0`)
+		if start_cursor ~= nil and start_cursor < 0 then
+			error(`Invalid cursor: {start_cursor}. Must be >= 0`)
 		end
 	end
 
-	local size = offset or 0
+	write_init(start_cursor)
 	for i, node: TypeNode in schema do
 		local value = input[i] -- will be nil if not provided, which is fine for optional types
-		size += (typeof(node.bytes) == "function" and (node.bytes :: (value: any) -> number)(value) or node.bytes :: number)
+		node.write(value)
 	end
 
-	local b = b_create(size)
-	offset = offset or 0
-	for i, node: TypeNode in schema do
-		local value = input[i] -- will be nil if not provided, which is fine for optional types
-		offset = node.write(b, offset :: number, value)
+	-- trim the buffer to actual size
+	local cursor = write_get_cursor()
+	local b = write_get_buffer()
+	local len = blen(b)
+	if len > cursor then
+		local old_buf = b
+		b = b_create(cursor)
+		b_copy(b, 0, old_buf, 0, cursor)
 	end
+
 	if typeof(self.compressionLevel) == "number" then
 		b = EncodingService:CompressBuffer(b, Enum.CompressionAlgorithm.Zstd, self.compressionLevel)
 	end
@@ -81,11 +93,11 @@ function serializer:serialize(offset: number?, ...: any): buffer
 	return b
 end
 
-function serializer:deserialize(offset: number?, b: buffer): ...any
-	-- validation: offset check
+function serializer:deserialize(cursor: number?, b: buffer): ...any
+	-- validation: cursor check
 	if Config.VALIDATION_LEVEL >= 1 then
-		if offset ~= nil and offset < 0 then
-			error(`Invalid offset: {offset}. Must be >= 0`)
+		if cursor ~= nil and cursor < 0 then
+			error(`Invalid cursor: {cursor}. Must be >= 0`)
 		end
 	end
 
@@ -96,10 +108,10 @@ function serializer:deserialize(offset: number?, b: buffer): ...any
 	local schema: { TypeNode } = self.schema
 	local schemaCount = #schema
 	local result = table.create(schemaCount)
-	offset = offset or 0
+	cursor = cursor or 0
 	for i = 1, schemaCount do
 		local node = schema[i]
-		result[i], offset = node.read(b, offset :: number)
+		result[i], cursor = node.read(b, cursor :: number)
 	end
 
 	return table.unpack(result, 1, schemaCount)

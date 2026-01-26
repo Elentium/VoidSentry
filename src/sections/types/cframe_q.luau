@@ -1,8 +1,12 @@
 --!strict
-local w_f32 = buffer.writef32
-local r_f32 = buffer.readf32
+local buffer_writer = require("../buffer_writer")
 local sqrt = math.sqrt
 local cframe_new = CFrame.new
+
+-- localize buffer_writer functions
+local writef32 = buffer_writer.writef32
+-- localize buffer read functions
+local readf32 = buffer.readf32
 
 --[[
     Quaternion cframe serialization, less precise but faster, recommended for most cases.
@@ -45,33 +49,30 @@ end
 
 return {
 	name = "cframe_q",
-	bytes = 28,
-	write = @native function(b: buffer, offset: number, value: CFrame): number
+	write = @native function(value: CFrame): ()
 		local pos = value.Position
 		local qx, qy, qz, qw = toQuaternion(value)
 
 		-- write position
-		w_f32(b, offset, pos.X)
-		w_f32(b, offset + 4, pos.Y)
-		w_f32(b, offset + 8, pos.Z)
+		writef32(pos.X)
+		writef32(pos.Y)
+		writef32(pos.Z)
 
 		-- write quaternion
-		w_f32(b, offset + 12, qx)
-		w_f32(b, offset + 16, qy)
-		w_f32(b, offset + 20, qz)
-		w_f32(b, offset + 24, qw)
-		return offset + 28
+		writef32(qx)
+		writef32(qy)
+		writef32(qz)
+		writef32(qw)
 	end,
-	read = @native function(b: buffer, offset: number): (CFrame, number)
+	read = @native function(b: buffer, cursor: number): (CFrame, number)
 		return cframe_new(
-			r_f32(b, offset), -- x
-			r_f32(b, offset + 4), -- y
-			r_f32(b, offset + 8), -- z
-			r_f32(b, offset + 12), -- qx
-			r_f32(b, offset + 16), -- qy
-			r_f32(b, offset + 20), -- qz
-			r_f32(b, offset + 24) -- qw
-		),
-			offset + 28
+			readf32(b, cursor), -- x
+			readf32(b, cursor + 4), -- y
+			readf32(b, cursor + 8), -- z
+			readf32(b, cursor + 12), -- qx
+			readf32(b, cursor + 16), -- qy
+			readf32(b, cursor + 20), -- qz
+			readf32(b, cursor + 24) -- qw
+		), cursor + 28
 	end,
 }

@@ -1,42 +1,42 @@
 --!strict
-local w_f32 = buffer.writef32
-local r_f32 = buffer.readf32
+local buffer_writer = require("../buffer_writer")
 local table_pack = table.pack
 local cframe_new = CFrame.new
+
+-- localize buffer_writer functions
+local writef32 = buffer_writer.writef32
+-- localize buffer read functions
+local readf32 = buffer.readf32
 
 --[[
     Most precise cframe serialization, but also the most expensive.
 ]]
 return {
 	name = "cframe",
-	bytes = 48,
-	write = @native function(b: buffer, offset: number, value: CFrame): number
+	write = @native function(value: CFrame): ()
 		local components = table_pack(value:GetComponents())
 		for i = 1, components.n do
-			w_f32(b, offset, components[i])
-			offset += 4
+			writef32(components[i])
 		end
-		return offset
 	end,
-	read = @native function(b: buffer, offset: number): (CFrame, number)
-		local cf = cframe_new(
+	read = @native function(b: buffer, cursor: number): (CFrame, number)
+		return cframe_new(
 			-- position
-			r_f32(b, offset),
-			r_f32(b, offset + 4),
-			r_f32(b, offset + 8),
+			readf32(b, cursor),
+			readf32(b, cursor + 4),
+			readf32(b, cursor + 8),
 			-- r0
-			r_f32(b, offset + 12),
-			r_f32(b, offset + 16),
-			r_f32(b, offset + 20),
+			readf32(b, cursor + 12),
+			readf32(b, cursor + 16),
+			readf32(b, cursor + 20),
 			-- r1
-			r_f32(b, offset + 24),
-			r_f32(b, offset + 28),
-			r_f32(b, offset + 32),
+			readf32(b, cursor + 24),
+			readf32(b, cursor + 28),
+			readf32(b, cursor + 32),
 			-- r2
-			r_f32(b, offset + 36),
-			r_f32(b, offset + 40),
-			r_f32(b, offset + 44)
-		)
-		return cf, offset + 48
+			readf32(b, cursor + 36),
+			readf32(b, cursor + 40),
+			readf32(b, cursor + 44)
+		), cursor + 48
 	end,
 }
