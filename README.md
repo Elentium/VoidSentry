@@ -1,8 +1,13 @@
 # VoidSentry
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square" alt="License" /></a>
+  <a href="https://wally.run/package/elentium/voidsentry"><img src="https://img.shields.io/badge/📦_Wally-elentium%2Fvoidsentry-00b4ab?style=flat-square" alt="Wally" /></a>
+  <a href="https://elentium.github.io/VoidSentry/"><img src="https://img.shields.io/badge/📖_Docs-GitHub_Pages-8b5cf6?style=flat-square" alt="Documentation" /></a>
+</p>
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-
-**A high-performance buffer serialization library for Roblox**
+<p align="center">
+  <strong>A high-performance buffer serialization library for Roblox</strong>
+</p>
 
 VoidSentry is a powerful, low-level buffer serializer designed for efficient data transmission in Roblox games. It provides both static (schema-based) and dynamic (schemaless) serialization with support for a wide range of data types.
 
