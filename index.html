@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VoidSentry Documentation</title>
     <link rel="stylesheet" href="style/style.css">
-    <link rel="shortcut icon" href="favicon.svg", type="image/svg+xml">
 </head>
 <body>
     <div class="container">
@@ -13,7 +12,7 @@
         <nav class="sidebar">
             <div class="logo">
                 <h1>VoidSentry</h1>
-                <p class="version">v0.0.8</p>
+                <p class="version">v0.0.7</p>
                 <div class="logo-links">
                     <a href="https://github.com/Elentium/VoidSentry" target="_blank" class="logo-link">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
@@ -70,7 +69,7 @@
                         <div class="code-block">
                             <h3>Wally: </h3>
                             <pre><code>[dependencies]
-VoidSentry = "elentium/voidsentry@0.0.8"</code></pre>
+VoidSentry = "elentium/voidsentry@0.0.7"</code></pre>
                              <h3> Direct(rbxm): </h3>
                                <p>find the VoidSentry.rbxm in roblox-direct file in repo</p>  
                         </div>
@@ -84,16 +83,16 @@ VoidSentry = "elentium/voidsentry@0.0.8"</code></pre>
                         <div class="code-block">
                             <pre><code>--!strict
 local VoidSentry = require(ReplicatedStorage.Packages.VoidSentry)
-local Types = VoidSentry.types
+local Types = VoidSentry.Types
 
 -- Create a serializer with a fixed schema
-local Serializer = VoidSentry.static.new(
+local Serializer = VoidSentry.Static.new(
     nil, -- No compression
-    Types.int32,
-    Types.string,
-    Types.struct({
-        Hello = Types.string,
-        World = Types.int32,
+    Types.Int32,
+    Types.String,
+    Types.Struct({
+        Hello = Types.String,
+        World = Types.Int32,
     })
 )
 
@@ -110,7 +109,7 @@ local int, str, struct = Serializer:deserialize(nil, b)</code></pre>
                         <h3>Dynamic Serializer</h3>
                         <div class="code-block">
                             <pre><code>local VoidSentry = require(ReplicatedStorage.Packages.VoidSentry)
-local Dynamic = VoidSentry.dynamic
+local Dynamic = VoidSentry.Dynamic
 
 -- No schema required!
 local buffer = Dynamic.serialize(
@@ -129,7 +128,7 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
 
                     <div class="section">
                         <h2>Performance Benchmarks</h2>
-                        <p class="note"><em>After version 0.0.8, dynamic serializer has become significantly faster.</em></p>
+                        <p class="note">* All benchmarks performed with 2000 iterations per test on standard Roblox hardware. Results show average time per operation.</p>
                         
                         <h3>Static Serializer Performance</h3>
                         <div class="benchmark-table-container">
@@ -143,12 +142,12 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Simple Types (int32, string, bool)</td><td>0.000954 ms</td><td>0.000593 ms</td><td>0.001547 ms</td></tr>
-                                    <tr><td>Vector Types (vector3)</td><td>0.000639 ms</td><td>0.000355 ms</td><td>0.000994 ms</td></tr>
-                                    <tr><td>Array Types (array&lt;int32&gt;)</td><td>0.001034 ms</td><td>0.000691 ms</td><td>0.001725 ms</td></tr>
-                                    <tr><td>Struct Types (PlayerData)</td><td>0.001074 ms</td><td>0.001280 ms</td><td>0.002354 ms</td></tr>
-                                    <tr><td>Complex Nested Types</td><td>0.001954 ms</td><td>0.002092 ms</td><td>0.004046 ms</td></tr>
-                                    <tr><td>With Compression (Level 5)</td><td>0.002153 ms</td><td>0.001804 ms</td><td>0.003957 ms</td></tr>
+                                    <tr><td>Simple Types (Int32, String, Bool)</td><td>0.000959 ms</td><td>0.000443 ms</td><td>0.001402 ms</td></tr>
+                                    <tr><td>Vector Types (Vector3, Vector3F24)</td><td>0.001292 ms</td><td>0.000431 ms</td><td>0.001723 ms</td></tr>
+                                    <tr><td>Array Types (Array&lt;Int32&gt;)</td><td>0.001149 ms</td><td>0.000563 ms</td><td>0.001712 ms</td></tr>
+                                    <tr><td>Struct Types (PlayerData)</td><td>0.001086 ms</td><td>0.000782 ms</td><td>0.001868 ms</td></tr>
+                                    <tr><td>Complex Nested Types</td><td>0.002128 ms</td><td>0.001329 ms</td><td>0.003457 ms</td></tr>
+                                    <tr><td>With Compression (Level 5)</td><td>0.002118 ms</td><td>0.001450 ms</td><td>0.003568 ms</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -165,13 +164,13 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Simple Types (int32, string, bool)</td><td>0.001694 ms</td><td>0.001243 ms</td><td>0.002937 ms</td></tr>
-                                    <tr><td>Vector Types (vector3)</td><td>0.000866 ms</td><td>0.000471 ms</td><td>0.001337 ms</td></tr>
-                                    <tr><td>Array Types</td><td>0.003547 ms</td><td>0.002285 ms</td><td>0.005832 ms</td></tr>
-                                    <tr><td>Struct Types (PlayerData as Table)</td><td>0.005376 ms</td><td>0.003519 ms</td><td>0.008895 ms</td></tr>
-                                    <tr><td>Complex Nested Types</td><td>0.007173 ms</td><td>0.005466 ms</td><td>0.012639 ms</td></tr>
-                                    <tr><td>Mixed Types</td><td>0.005006 ms</td><td>0.003675 ms</td><td>0.008681 ms</td></tr>
-                                    <tr><td>With Compression (Level 5)</td><td>0.002676 ms</td><td>0.002174 ms</td><td>0.004850 ms</td></tr>
+                                    <tr><td>Simple Types (Int32, String, Bool)</td><td>0.002071 ms</td><td>0.003448 ms</td><td>0.005519 ms</td></tr>
+                                    <tr><td>Vector Types (Vector3)</td><td>0.001214 ms</td><td>0.001489 ms</td><td>0.002703 ms</td></tr>
+                                    <tr><td>Array Types (Mixed Array)</td><td>0.012221 ms</td><td>0.009558 ms</td><td>0.021779 ms</td></tr>
+                                    <tr><td>Struct Types (PlayerData as Table)</td><td>0.014557 ms</td><td>0.012684 ms</td><td>0.027241 ms</td></tr>
+                                    <tr><td>Complex Nested Types</td><td>0.017743 ms</td><td>0.019277 ms</td><td>0.037020 ms</td></tr>
+                                    <tr><td>Mixed Types (Multiple Types)</td><td>0.011130 ms</td><td>0.013152 ms</td><td>0.024282 ms</td></tr>
+                                    <tr><td>With Compression (Level 5)</td><td>0.003054 ms</td><td>0.004565 ms</td><td>0.007619 ms</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -179,25 +178,25 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                         <div class="benchmark-grid">
                             <div class="benchmark-card">
                                 <h3>Performance Comparison</h3>
-                                <p class="benchmark-number">2.16x</p>
+                                <p class="benchmark-number">4.59x</p>
                                 <p class="benchmark-label">faster (Static vs Dynamic)</p>
-                                <p class="benchmark-desc">Simple types benchmark shows Static serializer is ~2.2x faster</p>
+                                <p class="benchmark-desc">Simple types benchmark shows Static serializer is ~4.6x faster</p>
                             </div>
                             <div class="benchmark-card">
                                 <h3>Static Simple Types</h3>
-                                <p class="benchmark-number">0.001207 ms</p>
+                                <p class="benchmark-number">0.001174 ms</p>
                                 <p class="benchmark-label">average per operation</p>
                                 <p class="benchmark-desc">Serialize + Deserialize combined</p>
                             </div>
                             <div class="benchmark-card">
                                 <h3>Dynamic Simple Types</h3>
-                                <p class="benchmark-number">0.002605 ms</p>
+                                <p class="benchmark-number">0.005392 ms</p>
                                 <p class="benchmark-label">average per operation</p>
                                 <p class="benchmark-desc">Serialize + Deserialize combined</p>
                             </div>
                             <div class="benchmark-card">
                                 <h3>Overhead</h3>
-                                <p class="benchmark-number">0.001398 ms</p>
+                                <p class="benchmark-number">0.004218 ms</p>
                                 <p class="benchmark-label">additional time per operation</p>
                                 <p class="benchmark-desc">Dynamic adds type inference overhead</p>
                             </div>
@@ -206,8 +205,8 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                         <div class="note-box">
                             <h4>💡 Key Insights</h4>
                             <ul>
-                                <li><strong>Static serializer</strong> is faster (2.16x) for simple types</li>
-                                <li><strong>Dynamic serializer</strong> has been significantly optimized in v0.0.8</li>
+                                <li><strong>Static serializer</strong> is significantly faster (4.59x) for simple types</li>
+                                <li><strong>Dynamic serializer</strong> overhead increases dramatically with complex nested structures</li>
                                 <li><strong>Compression</strong> adds overhead but can be beneficial for larger datasets</li>
                                 <li><strong>Deserialization</strong> is generally faster than serialization for Static, but slower for Dynamic due to type inference</li>
                                 <li>Use <strong>Static serializer</strong> when schema is known for optimal performance</li>
@@ -226,20 +225,20 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                         <h2>Static Serializer</h2>
                         
                         <div class="api-item">
-                            <h3 class="api-signature">VoidSentry.static.new(compressionLevel: number?, ...typeNode): staticObject</h3>
+                            <h3 class="api-signature">VoidSentry.Static.new(compressionLevel: number?, ...TypeNode): StaticObject</h3>
                             <p>Creates a new static serializer with a fixed schema.</p>
                             <div class="api-params">
                                 <strong>Parameters:</strong>
                                 <ul>
                                     <li><code>compressionLevel</code> (optional): Zstd compression level (-7 to 22, or <code>nil</code> for no compression)</li>
-                                    <li><code>...typeNode</code>: Variable number of type nodes defining the schema</li>
+                                    <li><code>...TypeNode</code>: Variable number of type nodes defining the schema</li>
                                 </ul>
-                                <strong>Returns:</strong> A <code>staticObject</code> with <code>serialize</code> and <code>deserialize</code> methods
+                                <strong>Returns:</strong> A <code>StaticObject</code> with <code>serialize</code> and <code>deserialize</code> methods
                             </div>
                         </div>
 
                         <div class="api-item">
-                            <h3 class="api-signature">staticObject:serialize(offset: number?, ...values): buffer</h3>
+                            <h3 class="api-signature">StaticObject:serialize(offset: number?, ...values): buffer</h3>
                             <p>Serializes data according to the schema.</p>
                             <div class="api-params">
                                 <strong>Parameters:</strong>
@@ -252,7 +251,7 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                         </div>
 
                         <div class="api-item">
-                            <h3 class="api-signature">staticObject:deserialize(offset: number?, buffer: buffer): ...values</h3>
+                            <h3 class="api-signature">StaticObject:deserialize(offset: number?, buffer: buffer): ...values</h3>
                             <p>Deserializes data from a buffer.</p>
                             <div class="api-params">
                                 <strong>Parameters:</strong>
@@ -269,7 +268,7 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                         <h2>Dynamic Serializer</h2>
                         
                         <div class="api-item">
-                            <h3 class="api-signature">VoidSentry.dynamic.serialize(compressionLevel: number?, offset: number?, ...values): buffer</h3>
+                            <h3 class="api-signature">VoidSentry.Dynamic.serialize(compressionLevel: number?, offset: number?, ...values): buffer</h3>
                             <p>Serializes data with automatic type inference.</p>
                             <div class="api-params">
                                 <strong>Parameters:</strong>
@@ -283,7 +282,7 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                         </div>
 
                         <div class="api-item">
-                            <h3 class="api-signature">VoidSentry.dynamic.deserialize(compressionLevel: number?, offset: number?, buffer: buffer): ...values</h3>
+                            <h3 class="api-signature">VoidSentry.Dynamic.deserialize(compressionLevel: number?, offset: number?, buffer: buffer): ...values</h3>
                             <p>Deserializes data with embedded type information.</p>
                             <div class="api-params">
                                 <strong>Parameters:</strong>
@@ -312,15 +311,15 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td><code>Types.int8</code></td><td>Signed 8-bit integer</td><td>1 byte</td><td>-128 to 127</td></tr>
-                                    <tr><td><code>Types.uInt8</code></td><td>Unsigned 8-bit integer</td><td>1 byte</td><td>0 to 255</td></tr>
-                                    <tr><td><code>Types.int16</code></td><td>Signed 16-bit integer</td><td>2 bytes</td><td>-32,768 to 32,767</td></tr>
-                                    <tr><td><code>Types.uInt16</code></td><td>Unsigned 16-bit integer</td><td>2 bytes</td><td>0 to 65,535</td></tr>
-                                    <tr><td><code>Types.int32</code></td><td>Signed 32-bit integer</td><td>4 bytes</td><td>-2³¹ to 2³¹-1</td></tr>
-                                    <tr><td><code>Types.uInt32</code></td><td>Unsigned 32-bit integer</td><td>4 bytes</td><td>0 to 2³²-1</td></tr>
-                                    <tr><td><code>Types.float32</code></td><td>32-bit floating point</td><td>4 bytes</td><td>IEEE 754 single precision</td></tr>
-                                    <tr><td><code>Types.float64</code></td><td>64-bit floating point</td><td>8 bytes</td><td>IEEE 754 double precision</td></tr>
-                                    <tr><td><code>Types.float24</code></td><td>24-bit floating point</td><td>3 bytes</td><td>Reduced precision (custom format)</td></tr>
+                                    <tr><td><code>Types.Int8</code></td><td>Signed 8-bit integer</td><td>1 byte</td><td>-128 to 127</td></tr>
+                                    <tr><td><code>Types.UInt8</code></td><td>Unsigned 8-bit integer</td><td>1 byte</td><td>0 to 255</td></tr>
+                                    <tr><td><code>Types.Int16</code></td><td>Signed 16-bit integer</td><td>2 bytes</td><td>-32,768 to 32,767</td></tr>
+                                    <tr><td><code>Types.UInt16</code></td><td>Unsigned 16-bit integer</td><td>2 bytes</td><td>0 to 65,535</td></tr>
+                                    <tr><td><code>Types.Int32</code></td><td>Signed 32-bit integer</td><td>4 bytes</td><td>-2³¹ to 2³¹-1</td></tr>
+                                    <tr><td><code>Types.UInt32</code></td><td>Unsigned 32-bit integer</td><td>4 bytes</td><td>0 to 2³²-1</td></tr>
+                                    <tr><td><code>Types.Float32</code></td><td>32-bit floating point</td><td>4 bytes</td><td>IEEE 754 single precision</td></tr>
+                                    <tr><td><code>Types.Float64</code></td><td>64-bit floating point</td><td>8 bytes</td><td>IEEE 754 double precision</td></tr>
+                                    <tr><td><code>Types.Float24</code></td><td>24-bit floating point</td><td>3 bytes</td><td>Reduced precision (custom format)</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -336,10 +335,10 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td><code>Types.string</code></td><td>Standard string</td><td>65,535 + 2 bytes (16-bit length prefix)</td></tr>
-                                    <tr><td><code>Types.stringTiny</code></td><td>Compact string</td><td>255 + 1 byte (8-bit length prefix)</td></tr>
-                                    <tr><td><code>Types.stringFixed(len)</code></td><td>Fixed length string</td><td>User-defined length</td></tr>
-                                    <tr><td><code>Types.stringNullTerminated</code></td><td>Null-terminated string (C-style)</td><td>Unlimited</td></tr>
+                                    <tr><td><code>Types.String</code></td><td>Standard string</td><td>65,535 + 2 bytes (16-bit length prefix)</td></tr>
+                                    <tr><td><code>Types.StringTiny</code></td><td>Compact string</td><td>255 + 1 byte (8-bit length prefix)</td></tr>
+                                    <tr><td><code>Types.StringFixed(len)</code></td><td>Fixed length string</td><td>User-defined length</td></tr>
+                                    <tr><td><code>Types.StringNullTerminated</code></td><td>Null-terminated string (C-style)</td><td>Unlimited</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -347,10 +346,10 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                         <div class="types-section">
                             <h3>Boolean & Special Types</h3>
                             <ul class="types-list">
-                                <li><code>Types.bool</code> - Boolean value (1 byte)</li>
-                                <li><code>Types.void</code> - Empty table (0 bytes)</li>
-                                <li><code>Types.nil</code> - Nil value (0 bytes)</li>
-                                <li><code>Types.any</code> - Any type (dynamic, includes type information)</li>
+                                <li><code>Types.Bool</code> - Boolean value (1 byte)</li>
+                                <li><code>Types.Void</code> - Empty table (0 bytes)</li>
+                                <li><code>Types.Nil</code> - Nil value (0 bytes)</li>
+                                <li><code>Types.Any</code> - Any type (dynamic, includes type information)</li>
                             </ul>
                         </div>
 
@@ -365,21 +364,20 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td><code>Types.vector3</code></td><td>Full precision Vector3</td><td>12 bytes</td></tr>
-                                    <tr><td><code>Types.vector3F24</code></td><td>Reduced precision Vector3</td><td>9 bytes</td></tr>
-                                    <tr><td><code>Types.vector3Int16</code></td><td>Integer Vector3</td><td>6 bytes</td></tr>
-                                    <tr><td><code>Types.vector2</code></td><td>Full precision Vector2</td><td>8 bytes</td></tr>
-                                    <tr><td><code>Types.vector2F24</code></td><td>Reduced precision Vector2</td><td>6 bytes</td></tr>
-                                    <tr><td><code>Types.vector2Int16</code></td><td>Integer Vector2</td><td>4 bytes</td></tr>
-                                    <tr><td><code>Types.vector</code></td><td>Full precision vector (luau native vector type)</td><td>12 bytes</td></tr>
-                                    <tr><td><code>Types.vectorF24</code></td><td>Reduced precision vector</td><td>9 bytes</td></tr>
-                                    <tr><td><code>Types.vectorInt16</code></td><td>Integer vector</td><td>6 bytes</td></tr>
-                                    <tr><td><code>Types.cframe</code></td><td>Full precision CFrame</td><td>48 bytes</td></tr>
-                                    <tr><td><code>Types.cframeQ</code></td><td>Quaternion CFrame</td><td>28 bytes</td></tr>
-                                    <tr><td><code>Types.cframeQF24</code></td><td>Quaternion CFrame with F24 components</td><td>21 bytes</td></tr>
-                                    <tr><td><code>Types.color3</code></td><td>RGB color</td><td>3 bytes</td></tr>
-                                    <tr><td><code>Types.enum(EnumType)</code></td><td>Enum value (requires Enum parameter)</td><td>2 bytes</td></tr>
-                                    <tr><td><code>Types.instance</code></td><td>Roblox Instance</td><td>Variable(Struct)</td></tr>
+                                    <tr><td><code>Types.Vector3</code></td><td>Full precision Vector3</td><td>12 bytes</td></tr>
+                                    <tr><td><code>Types.Vector3F24</code></td><td>Reduced precision Vector3</td><td>9 bytes</td></tr>
+                                    <tr><td><code>Types.Vector3int16</code></td><td>Integer Vector3</td><td>6 bytes</td></tr>
+                                    <tr><td><code>Types.Vector2</code></td><td>Full precision Vector2</td><td>8 bytes</td></tr>
+                                    <tr><td><code>Types.Vector2F24</code></td><td>Reduced precision Vector2</td><td>6 bytes</td></tr>
+                                    <tr><td><code>Types.Vector2int16</code></td><td>Integer Vector2</td><td>4 bytes</td></tr>
+                                    <tr><td><code>Types.Vector</code></td><td>Full precision vector (luau native vector type)</td><td>12 bytes</td></tr>
+                                    <tr><td><code>Types.VectorF24</code></td><td>Reduced precision vector</td><td>9 bytes</td></tr>
+                                    <tr><td><code>Types.VectorInt16</code></td><td>Integer vector</td><td>6 bytes</td></tr>
+                                    <tr><td><code>Types.CFrame</code></td><td>Full precision CFrame</td><td>48 bytes</td></tr>
+                                    <tr><td><code>Types.CFrameQ</code></td><td>Quaternion CFrame</td><td>28 bytes</td></tr>
+                                    <tr><td><code>Types.Color3</code></td><td>RGB color</td><td>3 bytes</td></tr>
+                                    <tr><td><code>Types.Enum(EnumType)</code></td><td>Enum value (requires Enum parameter)</td><td>2 bytes</td></tr>
+                                    <tr><td><code>Types.Instance</code></td><td>Roblox Instance</td><td>Variable(Struct)</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -396,18 +394,17 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td><code>Types.array(elementType)</code></td><td>Variable-size array</td><td>Element type</td><td>65,535 elements</td></tr>
-                                    <tr><td><code>Types.arrayTiny(elementType)</code></td><td>Compact array</td><td>Element type</td><td>255 elements</td></tr>
-                                    <tr><td><code>Types.arrayFixed(elementType, len)</code></td><td>Fixed-size array</td><td>Element type, length</td><td>User-defined</td></tr>
-                                    <tr><td><code>Types.map(keyType, valueType)</code></td><td>Variable-size map</td><td>Key type, value type</td><td>65,535 entries</td></tr>
-                                    <tr><td><code>Types.mapTiny(keyType, valueType)</code></td><td>Compact map</td><td>Key type, value type</td><td>255 entries</td></tr>
-                                    <tr><td><code>Types.mapFixed(keyType, valueType, len)</code></td><td>Fixed-size map</td><td>Key type, value type, length</td><td>User-defined</td></tr>
-                                    <tr><td><code>Types.struct({field = type, ...})</code></td><td>Fixed structure with named fields</td><td>Schema object</td><td>Fixed fields</td></tr>
-                                    <tr><td><code>Types.optional(type)</code></td><td>Nullable type</td><td>Base type</td><td>Same as base type + 1 byte</td></tr>
-                                    <tr><td><code>Types.boolPacked</code></td><td>Array of exactly 8 booleans</td><td>None</td><td>8 booleans (1 byte)</td></tr>
-                                    <tr><td><code>Types.bits._8(count)</code></td><td>Array of 8-bit values</td><td>Count</td><td>User-defined</td></tr>
-                                    <tr><td><code>Types.bits._16(count)</code></td><td>Array of 16-bit values</td><td>Count</td><td>User-defined</td></tr>
-                                    <tr><td><code>Types.bits._32(count)</code></td><td>Array of 32-bit values</td><td>Count</td><td>User-defined</td></tr>
+                                    <tr><td><code>Types.Array(elementType)</code></td><td>Variable-size array</td><td>Element type</td><td>65,535 elements</td></tr>
+                                    <tr><td><code>Types.ArrayTiny(elementType)</code></td><td>Compact array</td><td>Element type</td><td>255 elements</td></tr>
+                                    <tr><td><code>Types.ArrayFixed(elementType, len)</code></td><td>Fixed-size array</td><td>Element type, length</td><td>User-defined</td></tr>
+                                    <tr><td><code>Types.Map(keyType, valueType)</code></td><td>Variable-size map</td><td>Key type, value type</td><td>65,535 entries</td></tr>
+                                    <tr><td><code>Types.MapFixed(keyType, valueType, len)</code></td><td>Fixed-size map</td><td>Key type, value type, length</td><td>User-defined</td></tr>
+                                    <tr><td><code>Types.Struct({field = Type, ...})</code></td><td>Fixed structure with named fields</td><td>Schema object</td><td>Fixed fields</td></tr>
+                                    <tr><td><code>Types.Optional(type)</code></td><td>Nullable type</td><td>Base type</td><td>Same as base type + 1 byte</td></tr>
+                                    <tr><td><code>Types.BoolPacked</code></td><td>Array of exactly 8 booleans</td><td>None</td><td>8 booleans (1 byte)</td></tr>
+                                    <tr><td><code>Types.Bits._8(count)</code></td><td>Array of 8-bit values</td><td>Count</td><td>User-defined</td></tr>
+                                    <tr><td><code>Types.Bits._16(count)</code></td><td>Array of 16-bit values</td><td>Count</td><td>User-defined</td></tr>
+                                    <tr><td><code>Types.Bits._32(count)</code></td><td>Array of 32-bit values</td><td>Count</td><td>User-defined</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -417,7 +414,7 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                         <h2>Instance Type</h2>
                         
                         <div class="api-item">
-                            <h3 class="api-signature">Types.instance</h3>
+                            <h3 class="api-signature">Types.Instance</h3>
                             <p>Instances are serialized like structs. In order for the serializer to recognize an Instance's ClassName, it must be predefined in <code>serialize_data.luau</code> as a struct schema.</p>
                             <div class="api-params">
                                 <strong>How it works:</strong>
@@ -431,16 +428,16 @@ local int, str, vec, bool = Dynamic.deserialize(nil, nil, buffer)</code></pre>
                             <div class="code-block">
                                 <pre><code>-- In serialize_data.luau, define the Instance schema:
 -- Example for a "Part" class
-Part = Types.struct({
-    Name = Types.string,
-    Position = Types.vector3,
-    Size = Types.vector3,
-    Color = Types.color3,
-    Anchored = Types.bool,
+Part = Types.Struct({
+    Name = Types.String,
+    Position = Types.Vector3,
+    Size = Types.Vector3,
+    Color = Types.Color3,
+    Anchored = Types.Bool,
 })
 
--- Then use Types.instance in your serializer:
-local Serializer = VoidSentry.static.new(nil, Types.instance("Part"))
+-- Then use Types.Instance in your serializer:
+local Serializer = VoidSentry.Static.new(nil, Types.Instance("Part"))
 
 -- Serialize the Instance
 local part = workspace.MyPart
@@ -469,13 +466,13 @@ local buffer = Serializer:serialize(nil, part)</code></pre>
 
                         <div class="practice-item">
                             <h3>✅ Use Static Serializer When Possible</h3>
-                            <p>The static serializer is significantly faster (2x+) than dynamic serialization because it doesn't need to infer types at runtime. Use static serialization when you know your data structure ahead of time.</p>
+                            <p>The static serializer is significantly faster (3x+) than dynamic serialization because it doesn't need to infer types at runtime. Always use static serialization when you know your data structure ahead of time.</p>
                             <div class="code-block">
                                 <pre><code>-- ✅ Good: Static serializer
-local Serializer = VoidSentry.static.new(nil, Types.int32, Types.string)
+local Serializer = VoidSentry.Static.new(nil, Types.Int32, Types.String)
 
--- ⚠️ Use dynamic serializer when structure is unknown
-local buffer = VoidSentry.dynamic.serialize(nil, nil, data)</code></pre>
+-- ⚠️ Only use dynamic when structure is unknown
+local buffer = VoidSentry.Dynamic.serialize(nil, nil, data)</code></pre>
                             </div>
                         </div>
 
@@ -484,16 +481,16 @@ local buffer = VoidSentry.dynamic.serialize(nil, nil, data)</code></pre>
                             <p>Use the smallest type that fits your data to reduce bandwidth and improve performance.</p>
                             <div class="code-block">
                                 <pre><code>-- ✅ Good: Use Int16 for small numbers
-Types.int16  -- -32,768 to 32,767
+Types.Int16  -- -32,768 to 32,767
 
 -- ❌ Bad: Using Int32 for small numbers
-Types.int32  -- Unnecessary overhead
+Types.Int32  -- Unnecessary overhead
 
 -- ✅ Good: Use Vector3F24 for approximate positions
-Types.vector3F24  -- 9 bytes vs 12 bytes
+Types.Vector3F24  -- 9 bytes vs 12 bytes
 
--- ✅ Good: Use stringTiny for short strings
-Types.stringTiny  -- For strings ≤ 255 chars</code></pre>
+-- ✅ Good: Use StringTiny for short strings
+Types.StringTiny  -- For strings ≤ 255 characters</code></pre>
                             </div>
                         </div>
 
@@ -502,7 +499,7 @@ Types.stringTiny  -- For strings ≤ 255 chars</code></pre>
                             <p>Create serializer objects once and reuse them. Don't create new serializers on every serialization call.</p>
                             <div class="code-block">
                                 <pre><code>-- ✅ Good: Create once, reuse
-local PlayerSerializer = VoidSentry.static.new(nil, Types.struct({...}))
+local PlayerSerializer = VoidSentry.Static.new(nil, Types.Struct({...}))
 
 for _, player in players do
     local b = PlayerSerializer:serialize(nil, player)
@@ -511,7 +508,7 @@ end
 
 -- ❌ Bad: Creating new serializer each time
 for _, player in players do
-    local serializer = VoidSentry.static.new(nil, Types.struct({...}))
+    local serializer = VoidSentry.Static.new(nil, Types.Struct({...}))
     local b = serializer:serialize(nil, player)
 end</code></pre>
                             </div>
@@ -525,9 +522,9 @@ end</code></pre>
 local b = Serializer:serialize(nil, intValue, stringValue, structValue)
 
 -- ❌ Bad: Multiple serializations
-local b1 = Serializer1:serialize(nil, intValue)
-local b2 = Serializer2:serialize(nil, stringValue)
-local b3 = Serializer3:serialize(nil, structValue)</code></pre>
+local b1 = Serializer:serialize(nil, intValue)
+local b2 = Serializer:serialize(nil, stringValue)
+local b3 = Serializer:serialize(nil, structValue)</code></pre>
                             </div>
                         </div>
 
@@ -546,7 +543,7 @@ local b3 = Serializer3:serialize(nil, structValue)</code></pre>
                             <p>Ensure your data matches the expected types before serialization to avoid runtime errors.</p>
                             <div class="code-block">
                                 <pre><code>-- ✅ Good: Type checking
-if type(value) == "number" and value >= 0 and value <= 255 then
+if typeof(value) == "number" and value >= 0 and value <= 255 then
     local b = Serializer:serialize(nil, value)
 end</code></pre>
                             </div>
@@ -561,8 +558,8 @@ end</code></pre>
                             <p><strong>Warning:</strong> If you modify your schema, old serialized buffers will be incompatible. Plan schema changes carefully or implement versioning.</p>
                             <div class="code-block">
                                 <pre><code>-- Schema change breaks compatibility
--- Old: Types.int32, Types.string
--- New: Types.int32, Types.string, Types.bool
+-- Old: Types.Int32, Types.String
+-- New: Types.Int32, Types.String, Types.Bool
 -- Old buffers cannot be deserialized with new schema!</code></pre>
                             </div>
                         </div>
@@ -586,7 +583,7 @@ local largeData = Serializer:serialize(5, hugeTable, manyStrings)  -- 5KB+
 -- Compression likely beneficial
 
 -- ❌ Not recommended: Random/unique data
-local encryptedData = Serializer:serialize(5, encryptedData)
+local encryptedData = Serializer:serialize(5, encryptedBuffer)
 -- Random bytes don't compress well, may increase size</code></pre>
                             </div>
                         </div>
@@ -609,24 +606,23 @@ local result = Serializer:deserialize(0, b)  -- Will fail!</code></pre>
                             <h3>⚠️ Type Limits</h3>
                             <p><strong>Warning:</strong> Be aware of type limits to avoid runtime errors.</p>
                             <ul>
-                                <li><code>stringTiny</code>: Max 255 characters</li>
-                                <li><code>arrayTiny</code>: Max 255 elements</li>
-                                <li><code>mapTiny</code>: Max 255 entries</li>
-                                <li><code>string</code> / <code>array</code>: Max 65,535 characters/elements</li>
+                                <li><code>StringTiny</code>: Max 255 characters</li>
+                                <li><code>ArrayTiny</code>: Max 255 elements</li>
+                                <li><code>String</code> / <code>Array</code>: Max 65,535 characters/elements</li>
                                 <li>Numeric types have fixed ranges</li>
                             </ul>
                         </div>
 
                         <div class="warning-item">
                             <h3>⚠️ Enum Type Requirements</h3>
-                            <p><strong>Warning:</strong> When using <code>Types.enum</code>, you must provide the Enum type and ensure the value belongs to that Enum.</p>
+                            <p><strong>Warning:</strong> When using <code>Types.Enum</code>, you must provide the Enum type and ensure the value belongs to that Enum.</p>
                             <div class="code-block">
                                 <pre><code>-- ✅ Correct
-local MaterialEnum = Types.enum(Enum.Material)
+local MaterialEnum = Types.Enum(Enum.Material)
 local b = Serializer:serialize(nil, Enum.Material.Plastic)
 
 -- ❌ Wrong: Type mismatch
-local MaterialEnum = Types.enum(Enum.Material)
+local MaterialEnum = Types.Enum(Enum.Material)
 local b = Serializer:serialize(nil, Enum.HumanoidStateType.Running)  -- Error!</code></pre>
                             </div>
                         </div>
@@ -654,7 +650,7 @@ local b = Serializer:serialize(nil, Enum.HumanoidStateType.Running)  -- Error!</
 
                         <div class="credits-card">
                             <h3>Repository</h3>
-                            <p>Package: <code>elentium/voidsentry@0.0.8</code></p>
+                            <p>Package: <code>elentium/voidsentry@0.0.7</code></p>
                             <p>Github: <code>https://github.com/Elentium/VoidSentry</code></p>
                         </div>
 
@@ -668,22 +664,10 @@ local b = Serializer:serialize(nil, Enum.HumanoidStateType.Running)  -- Error!</
                         <h2>Changelog</h2>
                         
                         <div class="changelog-item latest">
-                            <h3 class="version-badge">Version 0.0.8</h3>
-                            <ul>
-                                <li>Added new types (CFrameQF24, MapTiny)</li>
-                                <li>Applied micro optimizations where needed</li>
-                                <li>Removed redundant dynamic serializer logic (big optimization)</li>
-                                <li>Improved struct reliability by ensuring keys determinism</li>
-                                <li>Added more validations</li>
-                                <li>Switched to camelCase for API, file names and variable names</li>
-                            </ul>
-                        </div>
-
-                        <div class="changelog-item">
                             <h3 class="version-badge">Version 0.0.7</h3>
                             <ul>
                                 <li>Added Instance type</li>
-                                <li>Reworked serializers (instead of making 2 iterations for serialization, it uses only one, by dynamically extending buffer when there is not enough space)</li>
+                                <li>Reworked serializers(instead of making 2 iterations for serialization, it uses only one, by dynamically extending buffer when there is not enough space)</li>
                             </ul>
                         </div>
 
