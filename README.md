@@ -1,4 +1,7 @@
-# VoidSentry
+# VoidSentry [DISCONTINUED]
+
+## FOR NEWER PROJECTS, CONSIDER USING THE SUCCESSOR: https://github.com/Elentium/VoidSentry2
+
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square" alt="License" /></a>
   <a href="https://wally.run/package/elentium/voidsentry"><img src="https://img.shields.io/badge/📦_Wally-elentium%2Fvoidsentry-00b4ab?style=flat-square" alt="Wally" /></a>
